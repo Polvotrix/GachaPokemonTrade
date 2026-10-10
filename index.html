@@ -10,7 +10,7 @@
 
     <!-- METADATOS SOCIALES -->
     <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, haz evolucionar a tus Pokémon y atrapa los 251 Pokémon!">
+    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, evoluciona a tus Pokémon y completa la Pokédex!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -18,11 +18,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <!-- MODAL DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+    <div id="modal-auth" class="modal-overlay">
+        <div class="modal-content modal-auth-content">
+            <h2 id="auth-title">🎮 Pokémon Gacha Master</h2>
+            <p id="auth-desc">Inicia sesión o regístrate para guardar tu progreso.</p>
+            
+            <form id="form-auth" onsubmit="event.preventDefault(); procesarAuth();">
+                <input type="text" id="auth-user" placeholder="Nombre de usuario" required autocomplete="username" maxlength="15">
+                <input type="password" id="auth-pass" placeholder="Contraseña" required autocomplete="current-password">
+                
+                <button type="submit" id="btn-submit-auth" class="btn-primary">Iniciar Sesión</button>
+            </form>
+
+            <div class="auth-toggle">
+                <span id="auth-toggle-text">¿No tienes cuenta?</span>
+                <button type="button" class="btn-link" onclick="alternarModoAuth()">Crear una cuenta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <div id="app-container" class="app-container hidden">
         <!-- HEADER -->
         <header>
             <div class="logo">🔴 PokeGacha UI</div>
             <div class="header-right">
+                <div class="user-badge">👤 <span id="nombre-usuario-display">Entrenador</span></div>
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
@@ -32,6 +54,7 @@
                 <button class="btn-tab" onclick="cambiarPestana('logros')">🏆 Logros</button>
                 <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
+                <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
             </div>
         </header>

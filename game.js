@@ -1,3 +1,8 @@
+// SISTEMA DE USUARIO / CIENTAS
+let usuarioActual = null;
+let modoRegistro = false;
+
+// VARIABLES DE JUEGO
 let monedas = 500;
 let inventario = [];
 let pokedexDescubiertos = [];
@@ -26,7 +31,8 @@ let hpJugadorActual = 0, hpJugadorMax = 0;
 let hpRivalActual = 0, hpRivalMax = 0;
 
 const CODIGOS_VALIDOS = {
-    "0711": { recompensa: 1000, tipo: "monedas", descripcion: "1.000 Pokedólares" }
+    "0711": { recompensa: 1000, tipo: "monedas", descripcion: "1.000 Pokedólares" },
+    "071011": { recompensa: 20000, tipo: "monedas", descripcion: "20.000 Pokedólares" }
 };
 
 const POKEDEX_TOTAL = Array.from({ length: 251 }, (_, i) => i + 1);
@@ -35,96 +41,10 @@ const POOL_EPICOS = [3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 10
 const POOL_RAROS = [2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140, 153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241];
 const POOL_COMUNES = POKEDEX_TOTAL.filter(id => !POOL_LEGENDARIOS.includes(id) && !POOL_EPICOS.includes(id) && !POOL_RAROS.includes(id));
 
-// DICCIONARIO DE EVOLUCIONES PRINCIPALES (ID Base ➔ Nivel Requerido y ID Objetivo)
 const MAPA_EVOLUCIONES = {
-    1: { nivel: 5, target: 2 },   // Bulbasaur -> Ivysaur
-    2: { nivel: 10, target: 3 },  // Ivysaur -> Venusaur
-    4: { nivel: 5, target: 5 },   // Charmander -> Charmeleon
-    5: { nivel: 10, target: 6 },  // Charmeleon -> Charizard
-    7: { nivel: 5, target: 8 },   // Squirtle -> Wartortle
-    8: { nivel: 10, target: 9 },  // Wartortle -> Blastoise
-    10: { nivel: 3, target: 11 }, // Caterpie -> Metapod
-    11: { nivel: 6, target: 12 }, // Metapod -> Butterfree
-    13: { nivel: 3, target: 14 }, // Weedle -> Kakuna
-    14: { nivel: 6, target: 15 }, // Kakuna -> Beedrill
-    16: { nivel: 4, target: 17 }, // Pidgey -> Pidgeotto
-    17: { nivel: 8, target: 18 }, // Pidgeotto -> Pidgeot
-    19: { nivel: 5, target: 20 }, // Rattata -> Raticate
-    21: { nivel: 5, target: 22 }, // Spearow -> Fearow
-    23: { nivel: 5, target: 24 }, // Ekans -> Arbok
-    25: { nivel: 6, target: 26 }, // Pikachu -> Raichu
-    27: { nivel: 5, target: 28 }, // Sandshrew -> Sandslash
-    29: { nivel: 4, target: 30 }, // NidoranF -> Nidorina
-    30: { nivel: 8, target: 31 }, // Nidorina -> Nidoqueen
-    32: { nivel: 4, target: 33 }, // NidoranM -> Nidorino
-    33: { nivel: 8, target: 34 }, // Nidorino -> Nidoking
-    41: { nivel: 5, target: 42 }, // Zubat -> Golbat
-    43: { nivel: 5, target: 44 }, // Oddish -> Gloom
-    46: { nivel: 5, target: 47 }, // Paras -> Parasect
-    48: { nivel: 5, target: 49 }, // Venonat -> Venomoth
-    52: { nivel: 5, target: 53 }, // Meowth -> Persian
-    54: { nivel: 5, target: 55 }, // Psyduck -> Golduck
-    56: { nivel: 5, target: 57 }, // Mankey -> Primeape
-    60: { nivel: 4, target: 61 }, // Poliwag -> Poliwhirl
-    63: { nivel: 4, target: 64 }, // Abra -> Kadabra
-    66: { nivel: 4, target: 67 }, // Machop -> Machoke
-    69: { nivel: 4, target: 70 }, // Bellsprout -> Weepinbell
-    72: { nivel: 5, target: 73 }, // Tentacool -> Tentacruel
-    74: { nivel: 4, target: 75 }, // Geodude -> Graveler
-    77: { nivel: 6, target: 78 }, // Ponyta -> Rapidash
-    79: { nivel: 6, target: 80 }, // Slowpoke -> Slowbro
-    81: { nivel: 5, target: 82 }, // Magnemite -> Magneton
-    84: { nivel: 5, target: 85 }, // Doduo -> Dodrio
-    86: { nivel: 5, target: 87 }, // Seel -> Dewgong
-    88: { nivel: 5, target: 89 }, // Grimer -> Muk
-    90: { nivel: 5, target: 91 }, // Shellder -> Cloyster
-    92: { nivel: 4, target: 93 }, // Gastly -> Haunter
-    96: { nivel: 5, target: 97 }, // Drowzee -> Hypno
-    98: { nivel: 5, target: 99 }, // Krabby -> Kingler
-    100: { nivel: 5, target: 101 }, // Voltorb -> Electrode
-    104: { nivel: 5, target: 105 }, // Cubone -> Marowak
-    109: { nivel: 5, target: 110 }, // Koffing -> Weezing
-    111: { nivel: 6, target: 112 }, // Rhyhorn -> Rhydon
-    116: { nivel: 5, target: 117 }, // Horsea -> Seadra
-    118: { nivel: 5, target: 119 }, // Goldeen -> Seaking
-    120: { nivel: 5, target: 121 }, // Staryu -> Starmie
-    129: { nivel: 5, target: 130 }, // Magikarp -> Gyarados
-    133: { nivel: 6, target: 134 }, // Eevee -> Vaporeon
-    138: { nivel: 6, target: 139 }, // Omanyte -> Omastar
-    140: { nivel: 6, target: 141 }, // Kabuto -> Kabutops
-    147: { nivel: 6, target: 148 }, // Dratini -> Dragonair
-    148: { nivel: 12, target: 149 }, // Dragonair -> Dragonite
-    152: { nivel: 5, target: 153 }, // Chikorita -> Bayleef
-    153: { nivel: 10, target: 154 }, // Bayleef -> Meganium
-    155: { nivel: 5, target: 156 }, // Cyndaquil -> Quilava
-    156: { nivel: 10, target: 157 }, // Quilava -> Typhlosion
-    158: { nivel: 5, target: 159 }, // Totodile -> Croconaw
-    159: { nivel: 10, target: 160 }, // Croconaw -> Feraligatr
-    161: { nivel: 4, target: 162 }, // Sentret -> Furret
-    163: { nivel: 4, target: 164 }, // Hoothoot -> Noctowl
-    165: { nivel: 4, target: 166 }, // Ledyba -> Ledian
-    167: { nivel: 4, target: 168 }, // Spinarak -> Ariados
-    170: { nivel: 5, target: 171 }, // Chinchou -> Lanturn
-    172: { nivel: 3, target: 25 },  // Pichu -> Pikachu
-    175: { nivel: 4, target: 176 }, // Togepi -> Togetic
-    177: { nivel: 5, target: 178 }, // Natu -> Xatu
-    179: { nivel: 4, target: 180 }, // Mareep -> Flaaffy
-    180: { nivel: 8, target: 181 }, // Flaaffy -> Ampharos
-    183: { nivel: 4, target: 184 }, // Marill -> Azumarill
-    187: { nivel: 4, target: 188 }, // Hoppip -> Skiploom
-    188: { nivel: 8, target: 189 }, // Skiploom -> Jumpluff
-    194: { nivel: 4, target: 195 }, // Wooper -> Quagsire
-    216: { nivel: 6, target: 217 }, // Teddiursa -> Ursaring
-    218: { nivel: 5, target: 219 }, // Slugma -> Magcargo
-    220: { nivel: 5, target: 221 }, // Swinub -> Piloswine
-    223: { nivel: 5, target: 224 }, // Remoraid -> Octillery
-    228: { nivel: 5, target: 229 }, // Houndour -> Houndoom
-    231: { nivel: 5, target: 232 }, // Phanpy -> Donphan
-    246: { nivel: 6, target: 247 }, // Larvitar -> Pupitar
-    247: { nivel: 12, target: 248 }  // Pupitar -> Tyranitar
+    1: { nivel: 5, target: 2 }, 2: { nivel: 10, target: 3 }, 4: { nivel: 5, target: 5 }, 5: { nivel: 10, target: 6 }, 7: { nivel: 5, target: 8 }, 8: { nivel: 10, target: 9 }, 10: { nivel: 3, target: 11 }, 11: { nivel: 6, target: 12 }, 13: { nivel: 3, target: 14 }, 14: { nivel: 6, target: 15 }, 16: { nivel: 4, target: 17 }, 17: { nivel: 8, target: 18 }, 19: { nivel: 5, target: 20 }, 21: { nivel: 5, target: 22 }, 23: { nivel: 5, target: 24 }, 25: { nivel: 6, target: 26 }, 27: { nivel: 5, target: 28 }, 29: { nivel: 4, target: 30 }, 30: { nivel: 8, target: 31 }, 32: { nivel: 4, target: 33 }, 33: { nivel: 8, target: 34 }, 41: { nivel: 5, target: 42 }, 43: { nivel: 5, target: 44 }, 46: { nivel: 5, target: 47 }, 48: { nivel: 5, target: 49 }, 52: { nivel: 5, target: 53 }, 54: { nivel: 5, target: 55 }, 56: { nivel: 5, target: 57 }, 60: { nivel: 4, target: 61 }, 63: { nivel: 4, target: 64 }, 66: { nivel: 4, target: 67 }, 69: { nivel: 4, target: 70 }, 72: { nivel: 5, target: 73 }, 74: { nivel: 4, target: 75 }, 77: { nivel: 6, target: 78 }, 79: { nivel: 6, target: 80 }, 81: { nivel: 5, target: 82 }, 84: { nivel: 5, target: 85 }, 86: { nivel: 5, target: 87 }, 88: { nivel: 5, target: 89 }, 90: { nivel: 5, target: 91 }, 92: { nivel: 4, target: 93 }, 96: { nivel: 5, target: 97 }, 98: { nivel: 5, target: 99 }, 100: { nivel: 5, target: 101 }, 104: { nivel: 5, target: 105 }, 109: { nivel: 5, target: 110 }, 111: { nivel: 6, target: 112 }, 116: { nivel: 5, target: 117 }, 118: { nivel: 5, target: 119 }, 120: { nivel: 5, target: 121 }, 129: { nivel: 5, target: 130 }, 133: { nivel: 6, target: 134 }, 138: { nivel: 6, target: 139 }, 140: { nivel: 6, target: 141 }, 147: { nivel: 6, target: 148 }, 148: { nivel: 12, target: 149 }, 152: { nivel: 5, target: 153 }, 153: { nivel: 10, target: 154 }, 155: { nivel: 5, target: 156 }, 156: { nivel: 10, target: 157 }, 158: { nivel: 5, target: 159 }, 159: { nivel: 10, target: 160 }, 161: { nivel: 4, target: 162 }, 163: { nivel: 4, target: 164 }, 165: { nivel: 4, target: 166 }, 167: { nivel: 4, target: 168 }, 170: { nivel: 5, target: 171 }, 172: { nivel: 3, target: 25 }, 175: { nivel: 4, target: 176 }, 177: { nivel: 5, target: 178 }, 179: { nivel: 4, target: 180 }, 180: { nivel: 8, target: 181 }, 183: { nivel: 4, target: 184 }, 187: { nivel: 4, target: 188 }, 188: { nivel: 8, target: 189 }, 194: { nivel: 4, target: 195 }, 216: { nivel: 6, target: 217 }, 218: { nivel: 5, target: 219 }, 220: { nivel: 5, target: 221 }, 223: { nivel: 5, target: 224 }, 228: { nivel: 5, target: 229 }, 231: { nivel: 5, target: 232 }, 246: { nivel: 6, target: 247 }, 247: { nivel: 12, target: 248 }
 };
 
-// TABLA SIMPLIFICADA DE EFECTIVIDAD DE TIPOS
 const TABLA_TIPOS = {
     fire: { grass: 1.6, ice: 1.6, bug: 1.6, steel: 1.6, water: 0.6, fire: 0.6, rock: 0.6, dragon: 0.6 },
     water: { fire: 1.6, ground: 1.6, rock: 1.6, water: 0.6, grass: 0.6, dragon: 0.6 },
@@ -145,7 +65,6 @@ const TABLA_TIPOS = {
     normal: { rock: 0.6, steel: 0.6, ghost: 0 }
 };
 
-// MISIONES DIARIAS
 const MISIONES = [
     { id: 'mision_tirar_3', titulo: 'Abre 3 Pokéballs', desc: 'Realiza al menos 3 tiradas hoy.', recompensa: 250, condicion: () => stats.tiradasHoy >= 3 },
     { id: 'mision_fusion', titulo: 'Maestro de la Fusión', desc: 'Realiza al menos 1 fusión de Pokémon.', recompensa: 350, condicion: () => stats.fusionesTotales >= 1 },
@@ -165,6 +84,84 @@ let audioSilenciado = false;
 let musicaIniciada = false;
 let audioCtx = null;
 let bgmTimer = null;
+
+// AUTENTICACIÓN
+function alternarModoAuth() {
+    modoRegistro = !modoRegistro;
+    document.getElementById('auth-title').innerText = modoRegistro ? '📝 Registrar Cuenta' : '🎮 Pokémon Gacha Master';
+    document.getElementById('auth-desc').innerText = modoRegistro ? 'Crea un usuario y contraseña para iniciar tu aventura.' : 'Inicia sesión o regístrate para guardar tu progreso.';
+    document.getElementById('btn-submit-auth').innerText = modoRegistro ? 'Registrarse' : 'Iniciar Sesión';
+    document.getElementById('auth-toggle-text').innerText = modoRegistro ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta?';
+    document.querySelector('.btn-link').innerText = modoRegistro ? 'Inicia sesión' : 'Crear una cuenta';
+}
+
+function procesarAuth() {
+    const user = document.getElementById('auth-user').value.trim().toLowerCase();
+    const pass = document.getElementById('auth-pass').value.trim();
+
+    if (!user || !pass) { alert("Completa todos los campos."); return; }
+
+    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+
+    if (modoRegistro) {
+        if (cuentas[user]) { alert("❌ Ese nombre de usuario ya está registrado."); return; }
+        cuentas[user] = { pass, datos: null };
+        localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
+        alert("🎉 ¡Cuenta creada con éxito! Ahora inicia sesión.");
+        alternarModoAuth();
+    } else {
+        if (!cuentas[user] || cuentas[user].pass !== pass) { alert("❌ Usuario o contraseña incorrectos."); return; }
+        
+        usuarioActual = user;
+        document.getElementById('nombre-usuario-display').innerText = user;
+        document.getElementById('modal-auth').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+
+        cargarPartida();
+        reproducirSonido('legendario');
+        actualizarUI();
+    }
+}
+
+function cerrarSesion() {
+    guardarPartida();
+    usuarioActual = null;
+    document.getElementById('app-container').classList.add('hidden');
+    document.getElementById('modal-auth').classList.remove('hidden');
+    document.getElementById('auth-user').value = '';
+    document.getElementById('auth-pass').value = '';
+}
+
+// LOCALSTORAGE POR USUARIO
+function guardarPartida() {
+    if (!usuarioActual) return;
+    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    if (cuentas[usuarioActual]) {
+        cuentas[usuarioActual].datos = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats };
+        localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
+    }
+}
+
+function cargarPartida() {
+    if (!usuarioActual) return;
+    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    if (cuentas[usuarioActual] && cuentas[usuarioActual].datos) {
+        const data = cuentas[usuarioActual].datos;
+        monedas = data.monedas ?? 500;
+        inventario = data.inventario ?? [];
+        pokedexDescubiertos = data.pokedexDescubiertos ?? [];
+        logrosReclamados = data.logrosReclamados ?? [];
+        misionesReclamadas = data.misionesReclamadas ?? [];
+        stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
+    } else {
+        monedas = 500;
+        inventario = [];
+        pokedexDescubiertos = [];
+        logrosReclamados = [];
+        misionesReclamadas = [];
+        stats = { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
+    }
+}
 
 // AUDIO
 function inicializarAudioContext() {
@@ -250,27 +247,6 @@ window.addEventListener('click', () => {
     if (!musicaIniciada && !audioSilenciado) inicializarAudioContext();
 }, { once: true });
 
-// LOCALSTORAGE
-function guardarPartida() {
-    const datosPartida = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats };
-    localStorage.setItem('pokeGachaSaveData', JSON.stringify(datosPartida));
-}
-
-function cargarPartida() {
-    const guardado = localStorage.getItem('pokeGachaSaveData');
-    if (guardado) {
-        try {
-            const data = JSON.parse(guardado);
-            monedas = data.monedas ?? 500;
-            inventario = data.inventario ?? [];
-            pokedexDescubiertos = data.pokedexDescubiertos ?? [];
-            logrosReclamados = data.logrosReclamados ?? [];
-            misionesReclamadas = data.misionesReclamadas ?? [];
-            stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
-        } catch (e) { console.error("Error al cargar guardado", e); }
-    }
-}
-
 // CÓDIGOS PROMOCIONALES
 function abrirModalCodigo() { reproducirSonido('normal'); document.getElementById('input-codigo').value = ''; document.getElementById('modal-codigo').classList.remove('hidden'); }
 function cerrarModalCodigo() { reproducirSonido('normal'); document.getElementById('modal-codigo').classList.add('hidden'); }
@@ -329,7 +305,7 @@ async function evolucionarPokemon(instanciaId) {
     } catch (e) { console.error("Error al evolucionar", e); }
 }
 
-// SISTEMA DE BATALLA / COMBATE CON TIPOS Y ANIMACIONES
+// SISTEMA DE BATALLA / COMBATE
 async function seleccionarLuchador(instanciaId) {
     reproducirSonido('normal');
     pokemonLuchador = inventario.find(p => p.instanciaId === instanciaId);
@@ -622,7 +598,7 @@ function actualizarEstadisticasVisuales() {
 
 // RECOMPENSA DIARIA
 function verificarEstadoRecompensaDiaria() {
-    const ultimoReclamo = localStorage.getItem('ultimoReclamoPokeGacha');
+    const ultimoReclamo = localStorage.getItem(`ultimoReclamoPokeGacha_${usuarioActual}`);
     const btnDiario = document.getElementById('btn-diario');
     if (!ultimoReclamo) { btnDiario.disabled = false; btnDiario.innerText = "🎁 Reclamar 500 💰"; return; }
     const ahora = Date.now(); const tiempoTranscurrido = ahora - parseInt(ultimoReclamo);
@@ -638,11 +614,11 @@ function verificarEstadoRecompensaDiaria() {
 
 function reclamarDiario() {
     reproducirSonido('legendario');
-    const ultimoReclamo = localStorage.getItem('ultimoReclamoPokeGacha');
+    const ultimoReclamo = localStorage.getItem(`ultimoReclamoPokeGacha_${usuarioActual}`);
     const ahora = Date.now(); const veinticuatroHoras = 24 * 60 * 60 * 1000;
     if (ultimoReclamo && (ahora - parseInt(ultimoReclamo)) < veinticuatroHoras) { alert("¡Ya has reclamado tu recompensa!"); return; }
     monedas += 500; stats.ganadosTotales += 500;
-    localStorage.setItem('ultimoReclamoPokeGacha', ahora.toString());
+    localStorage.setItem(`ultimoReclamoPokeGacha_${usuarioActual}`, ahora.toString());
     actualizarUI();
     alert("🎉 ¡Has recibido tus 500 Pokedólares diarios!");
 }
@@ -953,6 +929,4 @@ function renderizarPokedexCompleta() {
 }
 
 // Inicialización
-cargarPartida();
 setInterval(verificarEstadoRecompensaDiaria, 60000);
-actualizarUI();
