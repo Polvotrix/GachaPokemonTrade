@@ -2,6 +2,7 @@ let monedas = 500;
 let inventario = [];
 let pokedexDescubiertos = [];
 let logrosReclamados = [];
+let misionesReclamadas = [];
 let tirandoGacha = false;
 let seleccionadosFusion = [];
 
@@ -12,47 +13,42 @@ let stats = {
     tiradasTotales: 0,
     shiniesTotales: 0,
     gastadosTotales: 0,
-    ganadosTotales: 0
+    ganadosTotales: 0,
+    victoriasTotales: 0,
+    fusionesTotales: 0,
+    tiradasHoy: 0
 };
+
+// ESTADO DE COMBATE
+let pokemonLuchador = null;
+let pokemonRival = null;
+let hpJugadorActual = 0, hpJugadorMax = 0;
+let hpRivalActual = 0, hpRivalMax = 0;
 
 const CODIGOS_VALIDOS = {
     "0711": { recompensa: 1000, tipo: "monedas", descripcion: "1.000 Pokedólares" }
 };
 
-// GENERACIÓN DE POKÉDEX TOTAL: DEL #1 AL #251 (KANTO Y JOHTO)
 const POKEDEX_TOTAL = Array.from({ length: 251 }, (_, i) => i + 1);
-
-// LEGENDARIOS GEN 1 Y GEN 2 (#144-#146, #150-#151, #243-#251)
 const POOL_LEGENDARIOS = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251];
+const POOL_EPICOS = [3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 103, 115, 130, 131, 134, 135, 136, 139, 141, 142, 143, 149, 154, 157, 160, 169, 178, 181, 182, 186, 196, 197, 199, 208, 212, 214, 217, 227, 229, 230, 232, 242, 248];
+const POOL_RAROS = [2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140, 153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241];
+const POOL_COMUNES = POKEDEX_TOTAL.filter(id => !POOL_LEGENDARIOS.includes(id) && !POOL_EPICOS.includes(id) && !POOL_RAROS.includes(id));
 
-// ÉPICOS DIVERSIFICADOS DE GEN 1 Y GEN 2
-const POOL_EPICOS = [
-    3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 103, 115, 130, 131, 134, 135, 136, 139, 141, 142, 143, 149,
-    154, 157, 160, 169, 178, 181, 182, 186, 196, 197, 199, 208, 212, 214, 217, 227, 229, 230, 232, 242, 248
+// MISIONES DIARIAS
+const MISIONES = [
+    { id: 'mision_tirar_3', titulo: 'Abre 3 Pokéballs', desc: 'Realiza al menos 3 tiradas hoy.', recompensa: 250, condicion: () => stats.tiradasHoy >= 3 },
+    { id: 'mision_fusion', titulo: 'Maestro de la Fusión', desc: 'Realiza al menos 1 fusión de Pokémon.', recompensa: 350, condicion: () => stats.fusionesTotales >= 1 },
+    { id: 'mision_combate', titulo: 'Primer Combate Victorioso', desc: 'Gana al menos 1 batalla en la Arena.', recompensa: 400, condicion: () => stats.victoriasTotales >= 1 }
 ];
 
-// RAROS DIVERSIFICADOS DE GEN 1 Y GEN 2
-const POOL_RAROS = [
-    2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140,
-    153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241
-];
-
-// COMUNES: TODOS LOS DEMÁS HASTA EL 251
-const POOL_COMUNES = POKEDEX_TOTAL.filter(id => 
-    !POOL_LEGENDARIOS.includes(id) && 
-    !POOL_EPICOS.includes(id) && 
-    !POOL_RAROS.includes(id)
-);
-
-// LOGROS ACTUALIZADOS PARA LA POKÉDEX DE 251
 const LOGROS = [
     { id: 'primer_paso', titulo: '¡Primeros Pasos!', desc: 'Abre al menos 1 Pokéball.', recompensa: 150, condicion: () => stats.tiradasTotales >= 1 },
     { id: 'coleccion_10', titulo: 'Entrenador Novato', desc: 'Acumula al menos 10 Pokémon en tu inventario.', recompensa: 300, condicion: () => inventario.length >= 10 },
     { id: 'suerte_shiny', titulo: '¡Destello Divino!', desc: 'Consigue tu primer Pokémon Shiny.', recompensa: 600, condicion: () => stats.shiniesTotales >= 1 },
+    { id: 'campeon_arena', titulo: 'Gladiador Pokémon', desc: 'Gana 5 batallas en la Arena de Combate.', recompensa: 800, condicion: () => stats.victoriasTotales >= 5 },
     { id: 'pokedex_50', titulo: 'Explorador de Kanto y Johto', desc: 'Descubre 50 Pokémon distintos en tu Pokédex.', recompensa: 800, condicion: () => pokedexDescubiertos.length >= 50 },
-    { id: 'maestro_gacha', titulo: 'Adictomán Gacha', desc: 'Abre un total de 30 Pokéballs.', recompensa: 1000, condicion: () => stats.tiradasTotales >= 30 },
-    { id: 'leyenda_viva', titulo: 'Suerte Legendaria', desc: 'Consigue o posee un Pokémon Legendario.', recompensa: 1200, condicion: () => inventario.some(p => p.rareza === 'Legendario') },
-    { id: 'maestro_johto', titulo: 'Gran Coleccionista', desc: 'Descubre 100 Pokémon distintos en tu Pokédex.', recompensa: 2000, condicion: () => pokedexDescubiertos.length >= 100 }
+    { id: 'leyenda_viva', titulo: 'Suerte Legendaria', desc: 'Consigue o posee un Pokémon Legendario.', recompensa: 1200, condicion: () => inventario.some(p => p.rareza === 'Legendario') }
 ];
 
 let audioSilenciado = false;
@@ -138,7 +134,7 @@ window.addEventListener('click', () => {
 
 // LOCALSTORAGE
 function guardarPartida() {
-    const datosPartida = { monedas, inventario, pokedexDescubiertos, logrosReclamados, stats };
+    const datosPartida = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats };
     localStorage.setItem('pokeGachaSaveData', JSON.stringify(datosPartida));
 }
 
@@ -151,22 +147,15 @@ function cargarPartida() {
             inventario = data.inventario ?? [];
             pokedexDescubiertos = data.pokedexDescubiertos ?? [];
             logrosReclamados = data.logrosReclamados ?? [];
-            stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0 };
+            misionesReclamadas = data.misionesReclamadas ?? [];
+            stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
         } catch (e) { console.error("Error al cargar guardado", e); }
     }
 }
 
 // CÓDIGOS PROMOCIONALES
-function abrirModalCodigo() {
-    reproducirSonido('normal');
-    document.getElementById('input-codigo').value = '';
-    document.getElementById('modal-codigo').classList.remove('hidden');
-}
-
-function cerrarModalCodigo() {
-    reproducirSonido('normal');
-    document.getElementById('modal-codigo').classList.add('hidden');
-}
+function abrirModalCodigo() { reproducirSonido('normal'); document.getElementById('input-codigo').value = ''; document.getElementById('modal-codigo').classList.remove('hidden'); }
+function cerrarModalCodigo() { reproducirSonido('normal'); document.getElementById('modal-codigo').classList.add('hidden'); }
 
 function canjearCodigo() {
     const input = document.getElementById('input-codigo');
@@ -184,7 +173,112 @@ function canjearCodigo() {
     } else { alert("❌ Código inválido."); }
 }
 
-// LOGROS
+// SISTEMA DE BATALLA / COMBATE POR TURNOS
+function seleccionarLuchador(instanciaId) {
+    reproducirSonido('normal');
+    pokemonLuchador = inventario.find(p => p.instanciaId === instanciaId);
+    if (!pokemonLuchador) return;
+
+    const multiplicadorRareza = { 'Comun': 1, 'Raro': 1.5, 'Epico': 2.2, 'Legendario': 3.5 };
+    const baseMult = multiplicadorRareza[pokemonLuchador.rareza] || 1;
+
+    hpJugadorMax = Math.round(100 * baseMult + (pokemonLuchador.nivel * 20));
+    hpJugadorActual = hpJugadorMax;
+
+    document.getElementById('display-jugador').innerHTML = `<img src="${pokemonLuchador.sprite}" alt="${pokemonLuchador.nombre}">`;
+    document.getElementById('text-hp-jugador').innerText = `${hpJugadorActual} / ${hpJugadorMax} HP`;
+    document.getElementById('hp-jugador').style.width = '100%';
+
+    document.getElementById('btn-iniciar-batalla').disabled = false;
+    document.getElementById('btn-atacar').disabled = true;
+
+    logBatalla(`¡Has seleccionado a ${pokemonLuchador.nombre} (Nv. ${pokemonLuchador.nivel})! Pulsa "Buscar Rival".`);
+}
+
+async function buscarRival() {
+    reproducirSonido('normal');
+    const idRival = POKEDEX_TOTAL[Math.floor(Math.random() * POKEDEX_TOTAL.length)];
+    try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${idRival}`);
+        const datos = await res.json();
+
+        const nivelRival = Math.max(1, pokemonLuchador.nivel + Math.floor(Math.random() * 3) - 1);
+        pokemonRival = {
+            nombre: datos.name,
+            sprite: datos.sprites.front_default,
+            nivel: nivelRival
+        };
+
+        hpRivalMax = Math.round(90 + (nivelRival * 18));
+        hpRivalActual = hpRivalMax;
+
+        document.getElementById('display-rival').innerHTML = `<img src="${pokemonRival.sprite}" alt="${pokemonRival.nombre}">`;
+        document.getElementById('text-hp-rival').innerText = `${hpRivalActual} / ${hpRivalMax} HP`;
+        document.getElementById('hp-rival').style.width = '100%';
+
+        document.getElementById('btn-atacar').disabled = false;
+        document.getElementById('btn-iniciar-batalla').disabled = true;
+
+        logBatalla(`⚠️ Un ${pokemonRival.nombre} salvaje (Nv. ${nivelRival}) ha aparecido. ¡A luchar!`);
+    } catch (e) { console.error(e); }
+}
+
+function ejecutarAtaque() {
+    if (!pokemonLuchador || !pokemonRival || hpJugadorActual <= 0 || hpRivalActual <= 0) return;
+
+    reproducirSonido('normal');
+
+    // Turno Jugador
+    const danyoJugador = Math.round(15 + (pokemonLuchador.nivel * 5) + Math.random() * 10);
+    hpRivalActual = Math.max(0, hpRivalActual - danyoJugador);
+    const pctRival = Math.round((hpRivalActual / hpRivalMax) * 100);
+    document.getElementById('hp-rival').style.width = `${pctRival}%`;
+    document.getElementById('text-hp-rival').innerText = `${hpRivalActual} / ${hpRivalMax} HP`;
+
+    logBatalla(`⚡ Tu ${pokemonLuchador.nombre} ataca y causa ${danyoJugador} de daño.`);
+
+    if (hpRivalActual <= 0) {
+        const premio = 150 + (pokemonRival.nivel * 20);
+        monedas += premio;
+        stats.ganadosTotales += premio;
+        stats.victoriasTotales++;
+
+        reproducirSonido('legendario');
+        logBatalla(`🏆 ¡VICTORIA! Has derrotado a ${pokemonRival.nombre} y ganado ${premio} Pokedólares.`, 'victoria');
+        document.getElementById('btn-atacar').disabled = true;
+        document.getElementById('btn-iniciar-batalla').disabled = false;
+        actualizarUI();
+        return;
+    }
+
+    // Turno Rival
+    setTimeout(() => {
+        const danyoRival = Math.round(10 + (pokemonRival.nivel * 4) + Math.random() * 8);
+        hpJugadorActual = Math.max(0, hpJugadorActual - danyoRival);
+        const pctJugador = Math.round((hpJugadorActual / hpJugadorMax) * 100);
+        document.getElementById('hp-jugador').style.width = `${pctJugador}%`;
+        document.getElementById('text-hp-jugador').innerText = `${hpJugadorActual} / ${hpJugadorMax} HP`;
+
+        logBatalla(`💥 ${pokemonRival.nombre} contraataca y te inflige ${danyoRival} de daño.`);
+
+        if (hpJugadorActual <= 0) {
+            logBatalla(`☠️ Tu ${pokemonLuchador.nombre} ha sido debilitado. ¡Inténtalo de nuevo!`, 'derrota');
+            document.getElementById('btn-atacar').disabled = true;
+            document.getElementById('btn-iniciar-batalla').disabled = false;
+        }
+    }, 600);
+}
+
+function logBatalla(msg, tipo = '') {
+    const logBox = document.getElementById('log-batalla');
+    const p = document.createElement('p');
+    p.className = `log-line ${tipo}`;
+    p.innerText = msg;
+    logBox.appendChild(p);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+// LOGROS Y MISIONES
 function reclamarLogro(idLogro) {
     const logro = LOGROS.find(l => l.id === idLogro);
     if (!logro || logrosReclamados.includes(idLogro)) return;
@@ -198,11 +292,52 @@ function reclamarLogro(idLogro) {
     alert(`🏆 ¡Logro completado! Has ganado ${logro.recompensa} Pokedólares.`);
 }
 
+function reclamarMision(idMision) {
+    const mision = MISIONES.find(m => m.id === idMision);
+    if (!mision || misionesReclamadas.includes(idMision)) return;
+    if (!mision.condicion()) return;
+
+    monedas += mision.recompensa;
+    stats.ganadosTotales += mision.recompensa;
+    misionesReclamadas.push(idMision);
+    reproducirSonido('legendario');
+    actualizarUI();
+    alert(`📜 ¡Misión diaria completada! Has ganado ${mision.recompensa} Pokedólares.`);
+}
+
+function renderizarMisiones() {
+    const grid = document.getElementById('grid-misiones');
+    grid.innerHTML = '';
+
+    MISIONES.forEach(mision => {
+        const completada = mision.condicion();
+        const reclamada = misionesReclamadas.includes(mision.id);
+
+        const card = document.createElement('div');
+        card.className = `card-logro ${reclamada ? 'completado' : ''}`;
+        card.innerHTML = `
+            <div class="logro-info">
+                <h3>${mision.titulo}</h3>
+                <p>${mision.desc}</p>
+            </div>
+            <div class="logro-footer">
+                <span class="logro-recompensa">+${mision.recompensa} 💰</span>
+                <button class="btn-reclamar-logro" ${!completada || reclamada ? 'disabled' : ''} onclick="reclamarMision('${mision.id}')">
+                    ${reclamada ? '✔️ Reclamado' : completada ? '🎁 Reclamar' : '🔒 En progreso'}
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
 // NAVEGACIÓN
 function cambiarPestana(pestana) {
     reproducirSonido('normal');
     document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('vista-juego').classList.add('hidden');
+    document.getElementById('vista-batalla').classList.add('hidden');
+    document.getElementById('vista-misiones').classList.add('hidden');
     document.getElementById('vista-pokedex').classList.add('hidden');
     document.getElementById('vista-logros').classList.add('hidden');
     document.getElementById('vista-stats').classList.add('hidden');
@@ -210,6 +345,14 @@ function cambiarPestana(pestana) {
     if (pestana === 'juego') {
         document.querySelector('button[onclick="cambiarPestana(\'juego\')"]').classList.add('active');
         document.getElementById('vista-juego').classList.remove('hidden');
+    } else if (pestana === 'batalla') {
+        document.querySelector('button[onclick="cambiarPestana(\'batalla\')"]').classList.add('active');
+        document.getElementById('vista-batalla').classList.remove('hidden');
+        renderizarSeleccionBatalla();
+    } else if (pestana === 'misiones') {
+        document.querySelector('button[onclick="cambiarPestana(\'misiones\')"]').classList.add('active');
+        document.getElementById('vista-misiones').classList.remove('hidden');
+        renderizarMisiones();
     } else if (pestana === 'pokedex') {
         document.querySelector('button[onclick="cambiarPestana(\'pokedex\')"]').classList.add('active');
         document.getElementById('vista-pokedex').classList.remove('hidden');
@@ -244,12 +387,14 @@ function actualizarUI() {
     actualizarSlotsFusion();
     verificarEstadoRecompensaDiaria();
     if (!document.getElementById('vista-logros').classList.contains('hidden')) renderizarLogros();
+    if (!document.getElementById('vista-misiones').classList.contains('hidden')) renderizarMisiones();
     guardarPartida();
 }
 
 function actualizarEstadisticasVisuales() {
     document.getElementById('stat-tiradas').innerText = stats.tiradasTotales;
     document.getElementById('stat-shinies').innerText = `${stats.shiniesTotales} ✨`;
+    document.getElementById('stat-victorias').innerText = `${stats.victoriasTotales} ⚔️`;
     document.getElementById('stat-gastados').innerText = `${stats.gastadosTotales} 💰`;
     document.getElementById('stat-ganados').innerText = `${stats.ganadosTotales} 💰`;
     const porcentaje = Math.round((pokedexDescubiertos.length / POKEDEX_TOTAL.length) * 100);
@@ -316,7 +461,7 @@ async function tirarGacha(cantidad) {
     const costoTotal = cantidad === 10 ? costoActual * 9 : costoActual;
     if (monedas < costoTotal) { alert("¡No suficientes Pokedólares!"); return; }
 
-    monedas -= costoTotal; stats.gastadosTotales += costoTotal; stats.tiradasTotales += cantidad;
+    monedas -= costoTotal; stats.gastadosTotales += costoTotal; stats.tiradasTotales += cantidad; stats.tiradasHoy += cantidad;
     tirandoGacha = true;
     document.getElementById('btn-tirar').disabled = true;
     document.getElementById('btn-tirar-10').disabled = true;
@@ -333,9 +478,7 @@ async function tirarGacha(cantidad) {
             const datos = await resp.json();
 
             const spriteFinal = config.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-            const nuevoPokemon = {
-                id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1
-            };
+            const nuevoPokemon = { id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1 };
 
             setTimeout(() => {
                 inventario.push(nuevoPokemon);
@@ -360,9 +503,7 @@ async function tirarGacha(cantidad) {
                 const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${conf.pokemonId}`);
                 const datos = await resp.json();
                 const spriteFinal = conf.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-                const poke = {
-                    id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1
-                };
+                const poke = { id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1 };
                 if (conf.esShiny) stats.shiniesTotales++;
                 obtenidos.push(poke);
                 inventario.push(poke);
@@ -382,7 +523,7 @@ async function tirarGacha(cantidad) {
     } catch (e) {
         console.error(e);
         alert("Error al conectar con la API.");
-        monedas += costoTotal; stats.gastadosTotales -= costoTotal; stats.tiradasTotales -= cantidad;
+        monedas += costoTotal; stats.gastadosTotales -= costoTotal; stats.tiradasTotales -= cantidad; stats.tiradasHoy -= cantidad;
         tirandoGacha = false;
         document.getElementById('btn-tirar').disabled = false;
         document.getElementById('btn-tirar-10').disabled = false;
@@ -402,10 +543,7 @@ function mostrarModalX10(lista) {
     document.getElementById('modal-x10').classList.remove('hidden');
 }
 
-function cerrarModalX10() {
-    reproducirSonido('normal');
-    document.getElementById('modal-x10').classList.add('hidden');
-}
+function cerrarModalX10() { reproducirSonido('normal'); document.getElementById('modal-x10').classList.add('hidden'); }
 
 // INVENTARIO Y FUSIÓN
 function subirNivel(instanciaId) {
@@ -495,6 +633,7 @@ async function ejecutarFusion() {
         const datos = await respuesta.json();
         const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 1 };
         inventario.push(nuevoPokemon);
+        stats.fusionesTotales++;
         if (!pokedexDescubiertos.includes(datos.id)) pokedexDescubiertos.push(datos.id);
         reproducirSonido('legendario');
         actualizarUI();
@@ -502,34 +641,34 @@ async function ejecutarFusion() {
     } catch (e) { console.error(e); }
 }
 
-// RENDERIZADO LOGROS
+// RENDERIZADO LOGROS Y SELECCIÓN COMBATE
 function renderizarLogros() {
     const grid = document.getElementById('grid-logros');
     grid.innerHTML = '';
-
     LOGROS.forEach(logro => {
         const completado = logro.condicion();
         const reclamado = logrosReclamados.includes(logro.id);
-
         const card = document.createElement('div');
         card.className = `card-logro ${reclamado ? 'completado' : ''}`;
-        card.innerHTML = `
-            <div class="logro-info">
-                <h3>${logro.titulo}</h3>
-                <p>${logro.desc}</p>
-            </div>
-            <div class="logro-footer">
-                <span class="logro-recompensa">+${logro.recompensa} 💰</span>
-                <button class="btn-reclamar-logro" ${!completado || reclamado ? 'disabled' : ''} onclick="reclamarLogro('${logro.id}')">
-                    ${reclamado ? '✔️ Reclamado' : completado ? '🎁 Reclamar' : '🔒 En progreso'}
-                </button>
-            </div>
-        `;
+        card.innerHTML = `<div class="logro-info"><h3>${logro.titulo}</h3><p>${logro.desc}</p></div><div class="logro-footer"><span class="logro-recompensa">+${logro.recompensa} 💰</span><button class="btn-reclamar-logro" ${!completado || reclamado ? 'disabled' : ''} onclick="reclamarLogro('${logro.id}')">${reclamado ? '✔️ Reclamado' : completado ? '🎁 Reclamar' : '🔒 En progreso'}</button></div>`;
         grid.appendChild(card);
     });
 }
 
-// FILTRADO Y RENDERIZADO
+function renderizarSeleccionBatalla() {
+    const grid = document.getElementById('grid-seleccion-batalla');
+    grid.innerHTML = '';
+    if (inventario.length === 0) { grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #4b5563;">Abre Pokéballs para conseguir Pokémon y luchar.</p>`; return; }
+
+    inventario.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
+        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>Nv. ${poke.nivel}</small><button class="btn-card btn-subir" onclick="seleccionarLuchador(${poke.instanciaId})">Luchar ⚔️</button>`;
+        grid.appendChild(card);
+    });
+}
+
+// FILTRADO Y RENDERIZADO INVENTARIO Y POKÉDEX
 function aplicarFiltrosInventario() {
     const filtroRareza = document.getElementById('filtro-rareza').value;
     const ordenarPor = document.getElementById('ordenar-por').value;
@@ -557,15 +696,7 @@ function renderizarInventarioGrid(lista) {
         const estaSeleccionado = seleccionadosFusion.includes(poke.instanciaId);
         const card = document.createElement('div');
         card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
-        card.innerHTML = `
-            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
-            <img src="${poke.sprite}" alt="${poke.nombre}">
-            <strong>${poke.nombre}</strong>
-            <small>Nv. ${poke.nivel} (${poke.rareza})</small>
-            <button class="btn-card btn-subir" onclick="subirNivel(${poke.instanciaId})">Subir Nv. (${poke.nivel * 30} 💰)</button>
-            <button class="btn-card btn-vender" onclick="venderPokemon(${poke.instanciaId})">Vender (+${poke.valorBase + (poke.nivel * 15)} 💰)</button>
-            <button class="btn-card btn-seleccionar ${estaSeleccionado ? 'seleccionado' : ''}" onclick="seleccionarParaFusion(${poke.instanciaId})">${estaSeleccionado ? 'Quitar' : 'Fusionar'}</button>
-        `;
+        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>Nv. ${poke.nivel} (${poke.rareza})</small><button class="btn-card btn-subir" onclick="subirNivel(${poke.instanciaId})">Subir Nv. (${poke.nivel * 30} 💰)</button><button class="btn-card btn-vender" onclick="venderPokemon(${poke.instanciaId})">Vender (+${poke.valorBase + (poke.nivel * 15)} 💰)</button><button class="btn-card btn-seleccionar ${estaSeleccionado ? 'seleccionado' : ''}" onclick="seleccionarParaFusion(${poke.instanciaId})">${estaSeleccionado ? 'Quitar' : 'Fusionar'}</button>`;
         grid.appendChild(card);
     });
 }

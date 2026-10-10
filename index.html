@@ -10,7 +10,7 @@
 
     <!-- METADATOS SOCIALES -->
     <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
-    <meta property="og:description" content="¡Abre Pokéballs, colecciona los 251 Pokémon de Kanto y Johto, atrapa Shinies e incrementa tu colección!">
+    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, completa misiones diarias y atrapa los 251 Pokémon!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -26,6 +26,8 @@
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
+                <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
+                <button class="btn-tab" onclick="cambiarPestana('misiones')">📜 Misiones</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button class="btn-tab" onclick="cambiarPestana('logros')">🏆 Logros</button>
                 <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
@@ -114,6 +116,58 @@
             </section>
         </main>
 
+        <!-- VISTA DE BATALLA / COMBATE -->
+        <main id="vista-batalla" class="hidden">
+            <div class="sidebar-container">
+                <section class="gacha-section">
+                    <h2>Tus Luchadores ⚔️</h2>
+                    <p class="desc-intercambio">Elige un Pokémon de tu colección para enviarlo a la arena.</p>
+                    <div id="grid-seleccion-batalla" class="grid-inventario" style="max-height: 480px; width: 100%;"></div>
+                </section>
+            </div>
+
+            <section class="pokedex-container-full">
+                <h2>Arena de Batalla Pokémon ⚔️</h2>
+                <p class="desc-pokedex">Enfréntate a un rival salvaje en combates por turnos y gana Pokedólares.</p>
+                
+                <div class="battle-arena">
+                    <div class="fighter-box" id="box-rival">
+                        <h3>Rival Salvaje</h3>
+                        <div id="display-rival" class="fighter-display"><p>Esperando combate...</p></div>
+                        <div class="hp-bar-bg"><div id="hp-rival" class="hp-bar-fill" style="width: 100%;"></div></div>
+                        <span id="text-hp-rival">0 / 0 HP</span>
+                    </div>
+
+                    <div class="vs-badge">VS</div>
+
+                    <div class="fighter-box" id="box-jugador">
+                        <h3>Tu Pokémon</h3>
+                        <div id="display-jugador" class="fighter-display"><p>Elige un Pokémon a la izquierda</p></div>
+                        <div class="hp-bar-bg"><div id="hp-jugador" class="hp-bar-fill" style="width: 100%;"></div></div>
+                        <span id="text-hp-jugador">0 / 0 HP</span>
+                    </div>
+                </div>
+
+                <div class="battle-controls">
+                    <button id="btn-atacar" class="btn-primary" onclick="ejecutarAtaque()" disabled>⚡ Atacar</button>
+                    <button id="btn-iniciar-batalla" class="btn-secondary" onclick="buscarRival()" disabled>🔍 Buscar Rival</button>
+                </div>
+
+                <div id="log-batalla" class="log-batalla">
+                    <p class="log-line">¡Selecciona un Pokémon de la lista a la izquierda para comenzar!</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- VISTA DE MISIONES DIARIAS -->
+        <main id="vista-misiones" class="hidden">
+            <section class="pokedex-container-full">
+                <h2>Misiones Diarias 📜</h2>
+                <p class="desc-pokedex">Se reinician automáticamente cada 24 horas. ¡Complétalas para ganar dinero!</p>
+                <div id="grid-misiones" class="grid-logros"></div>
+            </section>
+        </main>
+
         <!-- VISTA DE POKÉDEX -->
         <main id="vista-pokedex" class="hidden">
             <section class="pokedex-container-full">
@@ -146,6 +200,10 @@
                     <div class="stat-card">
                         <h3>Pokémon Shiny Atrapados</h3>
                         <p id="stat-shinies">0 ✨</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Batallas Ganadas</h3>
+                        <p id="stat-victorias">0 ⚔️</p>
                     </div>
                     <div class="stat-card">
                         <h3>Pokedólares Gastados</h3>
