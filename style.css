@@ -113,7 +113,7 @@ main.hidden { display: none; }
 .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-/* INTERCAMBIO */
+/* INTERCAMBIO Y AMIGOS */
 .intercambio-section { background: #1f2937; border-radius: 14px; padding: 15px; border: 1px solid #374151; display: flex; flex-direction: column; align-items: center; }
 .intercambio-section h2 { font-size: 1rem; color: #9ca3af; margin-bottom: 4px; }
 .desc-intercambio { font-size: 0.7rem; color: #6b7280; text-align: center; margin-bottom: 10px; }
@@ -124,6 +124,12 @@ main.hidden { display: none; }
 .btn-secondary { width: 100%; background: #3b82f6; color: white; border: none; padding: 8px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; }
 .btn-secondary:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
 .btn-secondary:not(:disabled):hover { background: #2563eb; }
+
+.input-amigo-box { display: flex; gap: 6px; width: 100%; }
+.input-amigo-box input { flex: 1; background: #111827; border: 1px solid #4b5563; color: white; padding: 8px; border-radius: 6px; font-size: 0.8rem; outline: none; }
+.lista-amigos-container { display: flex; flex-direction: column; gap: 8px; width: 100%; max-height: 300px; overflow-y: auto; margin-top: 8px; }
+.card-amigo { background: #111827; border: 1px solid #374151; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+.card-amigo span { font-size: 0.85rem; font-weight: 600; color: #38bdf8; }
 
 /* INVENTARIO, POKÉDEX Y CONTENEDORES */
 .inventario-section, .pokedex-container-full { background: #1f2937; border-radius: 14px; padding: 20px; border: 1px solid #374151; display: flex; flex-direction: column; width: 100%; }

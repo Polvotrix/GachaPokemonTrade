@@ -1,6 +1,8 @@
-// SISTEMA DE USUARIO / CIENTAS
+// SISTEMA DE USUARIO / CUENTAS
 let usuarioActual = null;
 let modoRegistro = false;
+let amigosLista = [];
+let amigoSeleccionadoIntercambio = null;
 
 // VARIABLES DE JUEGO
 let monedas = 500;
@@ -105,7 +107,7 @@ function procesarAuth() {
 
     if (modoRegistro) {
         if (cuentas[user]) { alert("❌ Ese nombre de usuario ya está registrado."); return; }
-        cuentas[user] = { pass, datos: null };
+        cuentas[user] = { pass, datos: null, amigos: [] };
         localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
         alert("🎉 ¡Cuenta creada con éxito! Ahora inicia sesión.");
         alternarModoAuth();
@@ -138,6 +140,7 @@ function guardarPartida() {
     const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
     if (cuentas[usuarioActual]) {
         cuentas[usuarioActual].datos = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats };
+        cuentas[usuarioActual].amigos = amigosLista;
         localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
     }
 }
@@ -145,22 +148,122 @@ function guardarPartida() {
 function cargarPartida() {
     if (!usuarioActual) return;
     const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    if (cuentas[usuarioActual] && cuentas[usuarioActual].datos) {
-        const data = cuentas[usuarioActual].datos;
-        monedas = data.monedas ?? 500;
-        inventario = data.inventario ?? [];
-        pokedexDescubiertos = data.pokedexDescubiertos ?? [];
-        logrosReclamados = data.logrosReclamados ?? [];
-        misionesReclamadas = data.misionesReclamadas ?? [];
-        stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
-    } else {
-        monedas = 500;
-        inventario = [];
-        pokedexDescubiertos = [];
-        logrosReclamados = [];
-        misionesReclamadas = [];
-        stats = { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
+    if (cuentas[usuarioActual]) {
+        amigosLista = cuentas[usuarioActual].amigos || [];
+        if (cuentas[usuarioActual].datos) {
+            const data = cuentas[usuarioActual].datos;
+            monedas = data.monedas ?? 500;
+            inventario = data.inventario ?? [];
+            pokedexDescubiertos = data.pokedexDescubiertos ?? [];
+            logrosReclamados = data.logrosReclamados ?? [];
+            misionesReclamadas = data.misionesReclamadas ?? [];
+            stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
+        } else {
+            monedas = 500; inventario = []; pokedexDescubiertos = []; logrosReclamados = []; misionesReclamadas = [];
+            stats = { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
+        }
     }
+}
+
+// SISTEMA DE AMIGOS E INTERCAMBIOS
+function agregarAmigo() {
+    const input = document.getElementById('input-nuevo-amigo');
+    const amigoUser = input.value.trim().toLowerCase();
+
+    if (!amigoUser) return;
+    if (amigoUser === usuarioActual) { alert("❌ No puedes agregarte a ti mismo."); return; }
+
+    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    if (!cuentas[amigoUser]) { alert("❌ El usuario no existe."); return; }
+    if (amigosLista.includes(amigoUser)) { alert("❌ Ya tienes a este amigo en tu lista."); return; }
+
+    amigosLista.push(amigoUser);
+    input.value = '';
+    reproducirSonido('normal');
+    actualizarUI();
+    renderizarAmigos();
+    alert(`🎉 ¡Has añadido a ${amigoUser} a tus amigos!`);
+}
+
+function renderizarAmigos() {
+    const container = document.getElementById('lista-amigos');
+    container.innerHTML = '';
+
+    if (amigosLista.length === 0) {
+        container.innerHTML = `<p style="font-size:0.75rem; color:#6b7280; text-align:center;">No tienes amigos agregados aún.</p>`;
+        return;
+    }
+
+    amigosLista.forEach(amigo => {
+        const div = document.createElement('div');
+        div.className = 'card-amigo';
+        div.innerHTML = `
+            <span>👤 ${amigo}</span>
+            <button class="btn-action-top" style="font-size:0.65rem;" onclick="prepararIntercambio('${amigo}')">Intercambiar 🔄</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function prepararIntercambio(amigoUser) {
+    amigoSeleccionadoIntercambio = amigoUser;
+    document.getElementById('msg-sin-amigo-seleccionado').classList.add('hidden');
+    document.getElementById('zona-intercambio-amigo').classList.remove('hidden');
+    document.getElementById('nombre-amigo-intercambio').innerText = amigoUser;
+
+    renderizarGridIntercambio();
+}
+
+function renderizarGridIntercambio() {
+    const grid = document.getElementById('grid-inventario-intercambio');
+    grid.innerHTML = '';
+
+    if (inventario.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">No tienes Pokémon en tu colección para enviar.</p>`;
+        return;
+    }
+
+    inventario.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
+        card.innerHTML = `
+            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
+            <img src="${poke.sprite}" alt="${poke.nombre}">
+            <strong>${poke.nombre}</strong>
+            <small>Nv. ${poke.nivel}</small>
+            <button class="btn-card btn-subir" onclick="enviarPokemonIntercambio(${poke.instanciaId})">Enviar 🎁</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function enviarPokemonIntercambio(instanciaId) {
+    if (!amigoSeleccionadoIntercambio) return;
+
+    const index = inventario.findIndex(p => p.instanciaId === instanciaId);
+    if (index === -1) return;
+
+    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    if (!cuentas[amigoSeleccionadoIntercambio]) { alert("Error al encontrar la cuenta del amigo."); return; }
+
+    const pokeEnviado = inventario[index];
+    inventario.splice(index, 1);
+
+    if (!cuentas[amigoSeleccionadoIntercambio].datos) {
+        cuentas[amigoSeleccionadoIntercambio].datos = { monedas: 500, inventario: [], pokedexDescubiertos: [], logrosReclamados: [], misionesReclamadas: [], stats: { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 } };
+    }
+
+    cuentas[amigoSeleccionadoIntercambio].datos.inventario.push(pokeEnviado);
+    if (!cuentas[amigoSeleccionadoIntercambio].datos.pokedexDescubiertos.includes(pokeEnviado.id)) {
+        cuentas[amigoSeleccionadoIntercambio].datos.pokedexDescubiertos.push(pokeEnviado.id);
+    }
+
+    localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
+    reproducirSonido('legendario');
+    actualizarUI();
+    renderizarGridIntercambio();
+
+    alert(`🎁 ¡Le has enviado a ${pokeEnviado.nombre} a ${amigoSeleccionadoIntercambio} con éxito!`);
 }
 
 // AUDIO
@@ -532,6 +635,7 @@ function cambiarPestana(pestana) {
     document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('vista-juego').classList.add('hidden');
     document.getElementById('vista-batalla').classList.add('hidden');
+    document.getElementById('vista-amigos').classList.add('hidden');
     document.getElementById('vista-misiones').classList.add('hidden');
     document.getElementById('vista-pokedex').classList.add('hidden');
     document.getElementById('vista-logros').classList.add('hidden');
@@ -544,6 +648,10 @@ function cambiarPestana(pestana) {
         document.querySelector('button[onclick="cambiarPestana(\'batalla\')"]').classList.add('active');
         document.getElementById('vista-batalla').classList.remove('hidden');
         renderizarSeleccionBatalla();
+    } else if (pestana === 'amigos') {
+        document.querySelector('button[onclick="cambiarPestana(\'amigos\')"]').classList.add('active');
+        document.getElementById('vista-amigos').classList.remove('hidden');
+        renderizarAmigos();
     } else if (pestana === 'misiones') {
         document.querySelector('button[onclick="cambiarPestana(\'misiones\')"]').classList.add('active');
         document.getElementById('vista-misiones').classList.remove('hidden');

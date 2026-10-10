@@ -10,7 +10,7 @@
 
     <!-- METADATOS SOCIALES -->
     <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, evoluciona a tus Pokémon y completa la Pokédex!">
+    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, intercambia con amigos y completa la Pokédex!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -49,6 +49,7 @@
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
                 <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
+                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
                 <button class="btn-tab" onclick="cambiarPestana('misiones')">📜 Misiones</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button class="btn-tab" onclick="cambiarPestana('logros')">🏆 Logros</button>
@@ -180,6 +181,36 @@
 
                 <div id="log-batalla" class="log-batalla">
                     <p class="log-line">¡Selecciona un Pokémon de la lista a la izquierda para comenzar!</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- VISTA DE AMIGOS E INTERCAMBIOS -->
+        <main id="vista-amigos" class="hidden">
+            <div class="sidebar-container">
+                <section class="gacha-section">
+                    <h2>Añadir Amigo 👥</h2>
+                    <div class="input-amigo-box">
+                        <input type="text" id="input-nuevo-amigo" placeholder="Usuario de amigo..." maxlength="15">
+                        <button class="btn-primary" onclick="agregarAmigo()">Añadir</button>
+                    </div>
+
+                    <h2 style="margin-top: 15px;">Tus Amigos</h2>
+                    <div id="lista-amigos" class="lista-amigos-container"></div>
+                </section>
+            </div>
+
+            <section class="pokedex-container-full">
+                <h2>Centro de Intercambio Pokémon 🔁</h2>
+                <p class="desc-pokedex">Selecciona un amigo de la izquierda y envíale un Pokémon de tu colección.</p>
+                
+                <div id="zona-intercambio-amigo" class="hidden">
+                    <h3 style="margin-bottom: 10px; color: #38bdf8;">Intercambiando con: <span id="nombre-amigo-intercambio">-</span></h3>
+                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar 🎁" sobre un Pokémon de tu colección para regalárselo o intercambiarlo.</p>
+                    <div id="grid-inventario-intercambio" class="grid-inventario"></div>
+                </div>
+                <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">
+                    👈 Haz clic en "Intercambiar 🔄" en alguno de tus amigos de la lista de la izquierda para comenzar.
                 </div>
             </section>
         </main>
