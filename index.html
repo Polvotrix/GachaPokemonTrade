@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Gacha Master - ¡Colecciona y Fusiona!</title>
+    <title>Pokémon Gacha Master - Gen 1 & Gen 2</title>
 
-    <!-- FAVICON (Icono de pestaña Pokéball) -->
+    <!-- FAVICON -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M2,50 A48,48 0 0,0 98,50 Z' fill='white'/><line x1='2' y1='50' x2='98' y2='50' stroke='%23111' stroke-width='8'/><circle cx='50' cy='50' r='14' fill='white' stroke='%23111' stroke-width='8'/></svg>">
 
-    <!-- METADATOS PARA REDES SOCIALES -->
-    <meta property="og:title" content="🔴 Pokémon Gacha Master">
-    <meta property="og:description" content="¡Abre Pokéballs, colecciona Pokémon Shiny variocolor, fusionales e incrementa tu colección en este simulador gacha web!">
+    <!-- METADATOS SOCIALES -->
+    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
+    <meta property="og:description" content="¡Abre Pokéballs, colecciona los 251 Pokémon de Kanto y Johto, atrapa Shinies e incrementa tu colección!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -27,6 +27,7 @@
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
+                <button class="btn-tab" onclick="cambiarPestana('logros')">🏆 Logros</button>
                 <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
@@ -116,9 +117,18 @@
         <!-- VISTA DE POKÉDEX -->
         <main id="vista-pokedex" class="hidden">
             <section class="pokedex-container-full">
-                <h2>Registro Pokédex Completo</h2>
-                <p class="desc-pokedex">Descubre los Pokémon disponibles y completa tu colección mundial.</p>
+                <h2>Pokédex Nacional (Kanto & Johto)</h2>
+                <p class="desc-pokedex">Consigue los 251 Pokémon de las dos primeras generaciones para completar la Pokédex.</p>
                 <div id="grid-pokedex" class="grid-pokedex"></div>
+            </section>
+        </main>
+
+        <!-- VISTA DE LOGROS -->
+        <main id="vista-logros" class="hidden">
+            <section class="pokedex-container-full">
+                <h2>Logros de Entrenador 🏆</h2>
+                <p class="desc-pokedex">Completa objetivos para ganar Pokedólares de recompensa.</p>
+                <div id="grid-logros" class="grid-logros"></div>
             </section>
         </main>
 
@@ -154,7 +164,7 @@
         </main>
     </div>
 
-    <!-- MODAL PARA CANJEAR CÓDIGO PROMONIONAL -->
+    <!-- MODAL CÓDIGO -->
     <div id="modal-codigo" class="modal-overlay hidden">
         <div class="modal-content modal-codigo-content">
             <h2>🎟️ Canjear Código Promocional</h2>

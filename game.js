@@ -1,6 +1,7 @@
 let monedas = 500;
 let inventario = [];
 let pokedexDescubiertos = [];
+let logrosReclamados = [];
 let tirandoGacha = false;
 let seleccionadosFusion = [];
 
@@ -14,31 +15,55 @@ let stats = {
     ganadosTotales: 0
 };
 
-// CONFIGURACIÓN DE CÓDIGOS PROMOCIONALES (Ilimitados para testeo)
 const CODIGOS_VALIDOS = {
     "0711": { recompensa: 1000, tipo: "monedas", descripcion: "1.000 Pokedólares" }
 };
 
-// ESTADO DE AUDIO Y MÚSICA CHIPTUNE
+// GENERACIÓN DE POKÉDEX TOTAL: DEL #1 AL #251 (KANTO Y JOHTO)
+const POKEDEX_TOTAL = Array.from({ length: 251 }, (_, i) => i + 1);
+
+// LEGENDARIOS GEN 1 Y GEN 2 (#144-#146, #150-#151, #243-#251)
+const POOL_LEGENDARIOS = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 251];
+
+// ÉPICOS DIVERSIFICADOS DE GEN 1 Y GEN 2
+const POOL_EPICOS = [
+    3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 103, 115, 130, 131, 134, 135, 136, 139, 141, 142, 143, 149,
+    154, 157, 160, 169, 178, 181, 182, 186, 196, 197, 199, 208, 212, 214, 217, 227, 229, 230, 232, 242, 248
+];
+
+// RAROS DIVERSIFICADOS DE GEN 1 Y GEN 2
+const POOL_RAROS = [
+    2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140,
+    153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241
+];
+
+// COMUNES: TODOS LOS DEMÁS HASTA EL 251
+const POOL_COMUNES = POKEDEX_TOTAL.filter(id => 
+    !POOL_LEGENDARIOS.includes(id) && 
+    !POOL_EPICOS.includes(id) && 
+    !POOL_RAROS.includes(id)
+);
+
+// LOGROS ACTUALIZADOS PARA LA POKÉDEX DE 251
+const LOGROS = [
+    { id: 'primer_paso', titulo: '¡Primeros Pasos!', desc: 'Abre al menos 1 Pokéball.', recompensa: 150, condicion: () => stats.tiradasTotales >= 1 },
+    { id: 'coleccion_10', titulo: 'Entrenador Novato', desc: 'Acumula al menos 10 Pokémon en tu inventario.', recompensa: 300, condicion: () => inventario.length >= 10 },
+    { id: 'suerte_shiny', titulo: '¡Destello Divino!', desc: 'Consigue tu primer Pokémon Shiny.', recompensa: 600, condicion: () => stats.shiniesTotales >= 1 },
+    { id: 'pokedex_50', titulo: 'Explorador de Kanto y Johto', desc: 'Descubre 50 Pokémon distintos en tu Pokédex.', recompensa: 800, condicion: () => pokedexDescubiertos.length >= 50 },
+    { id: 'maestro_gacha', titulo: 'Adictomán Gacha', desc: 'Abre un total de 30 Pokéballs.', recompensa: 1000, condicion: () => stats.tiradasTotales >= 30 },
+    { id: 'leyenda_viva', titulo: 'Suerte Legendaria', desc: 'Consigue o posee un Pokémon Legendario.', recompensa: 1200, condicion: () => inventario.some(p => p.rareza === 'Legendario') },
+    { id: 'maestro_johto', titulo: 'Gran Coleccionista', desc: 'Descubre 100 Pokémon distintos en tu Pokédex.', recompensa: 2000, condicion: () => pokedexDescubiertos.length >= 100 }
+];
+
 let audioSilenciado = false;
 let musicaIniciada = false;
 let audioCtx = null;
 let bgmTimer = null;
 
-const POOL_COMUNES = [1, 4, 7, 10, 13, 16, 19, 21, 23, 25, 27, 29, 32, 35, 37, 39, 41, 43, 46, 48, 50, 52, 54, 56, 60, 63, 66, 69, 72, 74, 77, 79, 81, 84, 86, 88, 90, 92, 96, 98, 100, 102, 104, 108, 111, 116, 118, 120, 129, 133];
-const POOL_RAROS = [2, 5, 8, 11, 14, 17, 20, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 75, 78, 82, 85, 87, 89, 93, 97, 99, 103, 105, 109, 112, 117, 119, 121, 123, 125, 126, 128, 130, 138, 140];
-const POOL_EPICOS = [3, 6, 9, 12, 15, 18, 31, 34, 62, 65, 68, 71, 76, 83, 94, 95, 107, 110, 113, 114, 115, 122, 124, 127, 131, 134, 135, 136, 139, 141, 142, 149, 154, 157, 160];
-const POOL_LEGENDARIOS = [144, 145, 146, 150, 151, 249, 250, 251, 380, 381, 382, 383, 384, 385, 386, 483, 484, 487, 488, 493];
-const POKEDEX_TOTAL = [...POOL_COMUNES.slice(0, 25), ...POOL_RAROS.slice(0, 15), ...POOL_EPICOS.slice(0, 12), ...POOL_LEGENDARIOS.slice(0, 8)];
-
 // AUDIO
 function inicializarAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     if (!musicaIniciada && !audioSilenciado) {
         iniciarMusicaFondoChiptune();
         musicaIniciada = true;
@@ -108,14 +133,12 @@ function alternarAudio() {
 }
 
 window.addEventListener('click', () => {
-    if (!musicaIniciada && !audioSilenciado) {
-        inicializarAudioContext();
-    }
+    if (!musicaIniciada && !audioSilenciado) inicializarAudioContext();
 }, { once: true });
 
 // LOCALSTORAGE
 function guardarPartida() {
-    const datosPartida = { monedas, inventario, pokedexDescubiertos, stats };
+    const datosPartida = { monedas, inventario, pokedexDescubiertos, logrosReclamados, stats };
     localStorage.setItem('pokeGachaSaveData', JSON.stringify(datosPartida));
 }
 
@@ -127,12 +150,13 @@ function cargarPartida() {
             monedas = data.monedas ?? 500;
             inventario = data.inventario ?? [];
             pokedexDescubiertos = data.pokedexDescubiertos ?? [];
+            logrosReclamados = data.logrosReclamados ?? [];
             stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0 };
         } catch (e) { console.error("Error al cargar guardado", e); }
     }
 }
 
-// LÓGICA DE CANJEO DE CÓDIGOS (Ilimitado para testeo)
+// CÓDIGOS PROMOCIONALES
 function abrirModalCodigo() {
     reproducirSonido('normal');
     document.getElementById('input-codigo').value = '';
@@ -147,24 +171,31 @@ function cerrarModalCodigo() {
 function canjearCodigo() {
     const input = document.getElementById('input-codigo');
     const codigoIngresado = input.value.trim().toUpperCase();
-
-    if (!codigoIngresado) {
-        alert("Por favor, introduce un código.");
-        return;
-    }
+    if (!codigoIngresado) { alert("Por favor, introduce un código."); return; }
 
     if (CODIGOS_VALIDOS[codigoIngresado]) {
         const promo = CODIGOS_VALIDOS[codigoIngresado];
         monedas += promo.recompensa;
         stats.ganadosTotales += promo.recompensa;
-
         reproducirSonido('legendario');
         actualizarUI();
         cerrarModalCodigo();
         alert(`🎉 ¡Código canjeado con éxito! Has recibido ${promo.descripcion}.`);
-    } else {
-        alert("❌ Código inválido. Comprueba si lo has escrito correctamente.");
-    }
+    } else { alert("❌ Código inválido."); }
+}
+
+// LOGROS
+function reclamarLogro(idLogro) {
+    const logro = LOGROS.find(l => l.id === idLogro);
+    if (!logro || logrosReclamados.includes(idLogro)) return;
+    if (!logro.condicion()) return;
+
+    monedas += logro.recompensa;
+    stats.ganadosTotales += logro.recompensa;
+    logrosReclamados.push(idLogro);
+    reproducirSonido('legendario');
+    actualizarUI();
+    alert(`🏆 ¡Logro completado! Has ganado ${logro.recompensa} Pokedólares.`);
 }
 
 // NAVEGACIÓN
@@ -173,6 +204,7 @@ function cambiarPestana(pestana) {
     document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('vista-juego').classList.add('hidden');
     document.getElementById('vista-pokedex').classList.add('hidden');
+    document.getElementById('vista-logros').classList.add('hidden');
     document.getElementById('vista-stats').classList.add('hidden');
 
     if (pestana === 'juego') {
@@ -182,6 +214,10 @@ function cambiarPestana(pestana) {
         document.querySelector('button[onclick="cambiarPestana(\'pokedex\')"]').classList.add('active');
         document.getElementById('vista-pokedex').classList.remove('hidden');
         renderizarPokedexCompleta();
+    } else if (pestana === 'logros') {
+        document.querySelector('button[onclick="cambiarPestana(\'logros\')"]').classList.add('active');
+        document.getElementById('vista-logros').classList.remove('hidden');
+        renderizarLogros();
     } else if (pestana === 'stats') {
         document.querySelector('button[onclick="cambiarPestana(\'stats\')"]').classList.add('active');
         document.getElementById('vista-stats').classList.remove('hidden');
@@ -207,6 +243,7 @@ function actualizarUI() {
     aplicarFiltrosInventario();
     actualizarSlotsFusion();
     verificarEstadoRecompensaDiaria();
+    if (!document.getElementById('vista-logros').classList.contains('hidden')) renderizarLogros();
     guardarPartida();
 }
 
@@ -246,7 +283,7 @@ function reclamarDiario() {
     alert("🎉 ¡Has recibido tus 500 Pokedólares diarios!");
 }
 
-// GACHA CON MECÁNICA SHINY (2%)
+// GACHA
 function obtenerPokemonAleatorioConfig() {
     const prob = Math.random() * 100;
     let pokemonId, rareza, valorBase;
@@ -269,7 +306,7 @@ function obtenerPokemonAleatorioConfig() {
     }
 
     const esShiny = Math.random() < 0.02;
-    if (esShiny) { valorBase = valorBase * 3; }
+    if (esShiny) valorBase = valorBase * 3;
 
     return { pokemonId, rareza, valorBase, esShiny };
 }
@@ -277,7 +314,6 @@ function obtenerPokemonAleatorioConfig() {
 async function tirarGacha(cantidad) {
     if (tirandoGacha) return;
     const costoTotal = cantidad === 10 ? costoActual * 9 : costoActual;
-
     if (monedas < costoTotal) { alert("¡No suficientes Pokedólares!"); return; }
 
     monedas -= costoTotal; stats.gastadosTotales += costoTotal; stats.tiradasTotales += cantidad;
@@ -296,19 +332,9 @@ async function tirarGacha(cantidad) {
             const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${config.pokemonId}`);
             const datos = await resp.json();
 
-            const spriteFinal = config.esShiny 
-                ? (datos.sprites.front_shiny || datos.sprites.front_default)
-                : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-
+            const spriteFinal = config.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
             const nuevoPokemon = {
-                id: datos.id,
-                nombre: config.esShiny ? `✨ ${datos.name}` : datos.name,
-                rareza: config.rareza,
-                sprite: spriteFinal,
-                valorBase: config.valorBase,
-                esShiny: config.esShiny,
-                instanciaId: Date.now() + Math.random(),
-                nivel: 1
+                id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1
             };
 
             setTimeout(() => {
@@ -333,20 +359,9 @@ async function tirarGacha(cantidad) {
                 const conf = obtenerPokemonAleatorioConfig();
                 const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${conf.pokemonId}`);
                 const datos = await resp.json();
-
-                const spriteFinal = conf.esShiny 
-                    ? (datos.sprites.front_shiny || datos.sprites.front_default)
-                    : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-
+                const spriteFinal = conf.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
                 const poke = {
-                    id: datos.id,
-                    nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name,
-                    rareza: conf.rareza,
-                    sprite: spriteFinal,
-                    valorBase: conf.valorBase,
-                    esShiny: conf.esShiny,
-                    instanciaId: Date.now() + Math.random() + i,
-                    nivel: 1
+                    id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1
                 };
                 if (conf.esShiny) stats.shiniesTotales++;
                 obtenidos.push(poke);
@@ -364,7 +379,6 @@ async function tirarGacha(cantidad) {
                 actualizarUI();
             }, 1500);
         }
-
     } catch (e) {
         console.error(e);
         alert("Error al conectar con la API.");
@@ -382,12 +396,7 @@ function mostrarModalX10(lista) {
     lista.forEach(poke => {
         const card = document.createElement('div');
         card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
-        card.innerHTML = `
-            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
-            <img src="${poke.sprite}" alt="${poke.nombre}">
-            <strong>${poke.nombre}</strong>
-            <small>${poke.rareza}</small>
-        `;
+        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>${poke.rareza}</small>`;
         grid.appendChild(card);
     });
     document.getElementById('modal-x10').classList.remove('hidden');
@@ -398,17 +407,16 @@ function cerrarModalX10() {
     document.getElementById('modal-x10').classList.add('hidden');
 }
 
-// ACCIONES INVENTARIO
+// INVENTARIO Y FUSIÓN
 function subirNivel(instanciaId) {
     reproducirSonido('normal');
     const poke = inventario.find(p => p.instanciaId === instanciaId);
     const costoSubir = poke.nivel * 30;
-
     if (monedas >= costoSubir) {
         monedas -= costoSubir; stats.gastadosTotales += costoSubir;
         poke.nivel++;
         actualizarUI();
-    } else { alert(`Necesitas ${costoSubir} Pokedólares para subir de nivel.`); }
+    } else { alert(`Necesitas ${costoSubir} Pokedólares.`); }
 }
 
 function venderPokemon(instanciaId) {
@@ -427,7 +435,6 @@ function venderPokemon(instanciaId) {
 function venderDuplicados() {
     if (inventario.length === 0) return;
     reproducirSonido('normal');
-
     const mapasPokemons = {};
     inventario.forEach(poke => {
         const clave = `${poke.id}_${poke.esShiny ? 'shiny' : 'normal'}`;
@@ -437,14 +444,12 @@ function venderDuplicados() {
 
     let gananciaTotal = 0;
     let nuevosInventario = [];
-
     Object.values(mapasPokemons).forEach(grupo => {
         grupo.sort((a, b) => b.nivel - a.nivel);
         nuevosInventario.push(grupo[0]);
         for (let i = 1; i < grupo.length; i++) {
-            const duplicado = grupo[i];
-            gananciaTotal += duplicado.valorBase + (duplicado.nivel * 15);
-            seleccionadosFusion = seleccionadosFusion.filter(id => id !== duplicado.instanciaId);
+            gananciaTotal += grupo[i].valorBase + (grupo[i].nivel * 15);
+            seleccionadosFusion = seleccionadosFusion.filter(id => id !== grupo[i].instanciaId);
         }
     });
 
@@ -452,18 +457,17 @@ function venderDuplicados() {
         monedas += gananciaTotal; stats.ganadosTotales += gananciaTotal;
         inventario = nuevosInventario;
         actualizarUI();
-        alert(`¡Has vendido tus duplicados y ganado ${gananciaTotal} Pokedólares!`);
-    } else { alert("No tienes Pokémon duplicados para vender."); }
+        alert(`¡Vendidos duplicados por ${gananciaTotal} Pokedólares!`);
+    } else { alert("No hay duplicados."); }
 }
 
-// FUSIÓN
 function seleccionarParaFusion(instanciaId) {
     reproducirSonido('normal');
     const index = seleccionadosFusion.indexOf(instanciaId);
     if (index !== -1) { seleccionadosFusion.splice(index, 1); } 
     else {
         if (seleccionadosFusion.length < 3) seleccionadosFusion.push(instanciaId);
-        else alert("Ya tienes 3 Pokémon seleccionados para fusionar.");
+        else alert("Máximo 3 Pokémon para fusionar.");
     }
     actualizarUI();
 }
@@ -474,14 +478,8 @@ function actualizarSlotsFusion() {
         const idActual = seleccionadosFusion[i];
         if (idActual) {
             const poke = inventario.find(p => p.instanciaId === idActual);
-            if (poke) {
-                slotEl.innerHTML = `<img src="${poke.sprite}" alt="${poke.nombre}">`;
-                slotEl.style.borderStyle = "solid"; slotEl.style.borderColor = "#8b5cf6";
-            }
-        } else {
-            slotEl.innerHTML = `Slot ${i + 1}`;
-            slotEl.style.borderStyle = "dashed"; slotEl.style.borderColor = "#4b5563";
-        }
+            if (poke) { slotEl.innerHTML = `<img src="${poke.sprite}" alt="${poke.nombre}">`; slotEl.style.borderStyle = "solid"; slotEl.style.borderColor = "#8b5cf6"; }
+        } else { slotEl.innerHTML = `Slot ${i + 1}`; slotEl.style.borderStyle = "dashed"; slotEl.style.borderColor = "#4b5563"; }
     }
     document.getElementById('btn-fusionar').disabled = seleccionadosFusion.length !== 3;
 }
@@ -495,47 +493,57 @@ async function ejecutarFusion() {
     try {
         const respuesta = await fetch(`https://pokeapi.co/api/v2/pokemon/${idAleatorio}`);
         const datos = await respuesta.json();
-        const nuevoPokemon = {
-            id: datos.id,
-            nombre: datos.name,
-            rareza: 'Epico',
-            sprite: datos.sprites.front_default,
-            valorBase: 180,
-            esShiny: false,
-            instanciaId: Date.now() + Math.random(),
-            nivel: 1
-        };
+        const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 1 };
         inventario.push(nuevoPokemon);
         if (!pokedexDescubiertos.includes(datos.id)) pokedexDescubiertos.push(datos.id);
         reproducirSonido('legendario');
         actualizarUI();
-        alert(`¡Fusión exitosa! Has obtenido un ${nuevoPokemon.nombre} (Épico).`);
+        alert(`¡Fusión exitosa! Obtuviste un ${nuevoPokemon.nombre} (Épico).`);
     } catch (e) { console.error(e); }
 }
 
-// FILTRADO Y ORDENADO
+// RENDERIZADO LOGROS
+function renderizarLogros() {
+    const grid = document.getElementById('grid-logros');
+    grid.innerHTML = '';
+
+    LOGROS.forEach(logro => {
+        const completado = logro.condicion();
+        const reclamado = logrosReclamados.includes(logro.id);
+
+        const card = document.createElement('div');
+        card.className = `card-logro ${reclamado ? 'completado' : ''}`;
+        card.innerHTML = `
+            <div class="logro-info">
+                <h3>${logro.titulo}</h3>
+                <p>${logro.desc}</p>
+            </div>
+            <div class="logro-footer">
+                <span class="logro-recompensa">+${logro.recompensa} 💰</span>
+                <button class="btn-reclamar-logro" ${!completado || reclamado ? 'disabled' : ''} onclick="reclamarLogro('${logro.id}')">
+                    ${reclamado ? '✔️ Reclamado' : completado ? '🎁 Reclamar' : '🔒 En progreso'}
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// FILTRADO Y RENDERIZADO
 function aplicarFiltrosInventario() {
     const filtroRareza = document.getElementById('filtro-rareza').value;
     const ordenarPor = document.getElementById('ordenar-por').value;
-
     let listaFiltrada = [...inventario];
 
-    if (filtroRareza === 'shiny') {
-        listaFiltrada = listaFiltrada.filter(p => p.esShiny);
-    } else if (filtroRareza !== 'todas') {
-        listaFiltrada = listaFiltrada.filter(p => p.rareza === filtroRareza);
-    }
+    if (filtroRareza === 'shiny') listaFiltrada = listaFiltrada.filter(p => p.esShiny);
+    else if (filtroRareza !== 'todas') listaFiltrada = listaFiltrada.filter(p => p.rareza === filtroRareza);
 
-    if (ordenarPor === 'nivel') {
-        listaFiltrada.sort((a, b) => b.nivel - a.nivel);
-    } else if (ordenarPor === 'nombre') {
-        listaFiltrada.sort((a, b) => a.nombre.localeCompare(b.nombre));
-    } else if (ordenarPor === 'rareza') {
-        const ordenRarezas = { 'Legendario': 4, 'Epico': 3, 'Raro': 2, 'Comun': 1 };
-        listaFiltrada.sort((a, b) => ordenRarezas[b.rareza] - ordenRarezas[a.rareza]);
-    } else {
-        listaFiltrada.reverse();
-    }
+    if (ordenarPor === 'nivel') listaFiltrada.sort((a, b) => b.nivel - a.nivel);
+    else if (ordenarPor === 'nombre') listaFiltrada.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    else if (ordenarPor === 'rareza') {
+        const o = { 'Legendario': 4, 'Epico': 3, 'Raro': 2, 'Comun': 1 };
+        listaFiltrada.sort((a, b) => o[b.rareza] - o[a.rareza]);
+    } else listaFiltrada.reverse();
 
     renderizarInventarioGrid(listaFiltrada);
 }
@@ -543,11 +551,7 @@ function aplicarFiltrosInventario() {
 function renderizarInventarioGrid(lista) {
     const grid = document.getElementById('grid-inventario');
     grid.innerHTML = '';
-
-    if (lista.length === 0) {
-        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #4b5563; padding: 40px;">No hay Pokémon que coincidan con los filtros seleccionados.</p>`;
-        return;
-    }
+    if (lista.length === 0) { grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #4b5563; padding: 40px;">No hay Pokémon en esta vista.</p>`; return; }
 
     lista.forEach(poke => {
         const estaSeleccionado = seleccionadosFusion.includes(poke.instanciaId);
@@ -573,11 +577,7 @@ function renderizarPokedexCompleta() {
         const descubierto = pokedexDescubiertos.includes(id);
         const card = document.createElement('div');
         card.className = `card-pokemon ${descubierto ? 'Comun' : 'bloqueado'}`;
-        card.innerHTML = `
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="Pokédex">
-            <strong>#${id}</strong>
-            <small>${descubierto ? 'Descubierto' : '???'}</small>
-        `;
+        card.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="Pokédex"><strong>#${id}</strong><small>${descubierto ? 'Descubierto' : '???'}</small>`;
         grid.appendChild(card);
     });
 }

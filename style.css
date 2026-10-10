@@ -60,11 +60,7 @@ header {
     transition: 0.2s;
 }
 
-.btn-audio.muted {
-    color: #9ca3af;
-    border-color: #4b5563;
-    background: #1f2937;
-}
+.btn-audio.muted { color: #9ca3af; border-color: #4b5563; background: #1f2937; }
 
 .btn-codigo {
     background: linear-gradient(135deg, #a855f7, #7e22ce);
@@ -79,10 +75,7 @@ header {
     box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.3);
 }
 
-.btn-codigo:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-}
+.btn-codigo:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
 .btn-tab {
     background: #374151;
@@ -96,10 +89,7 @@ header {
     transition: 0.2s;
 }
 
-.btn-tab.active, .btn-tab:hover {
-    background: #ef4444;
-    color: white;
-}
+.btn-tab.active, .btn-tab:hover { background: #ef4444; color: white; }
 
 .btn-diario {
     background: linear-gradient(135deg, #10b981, #059669);
@@ -136,11 +126,7 @@ main {
 
 main.hidden { display: none; }
 
-.sidebar-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+.sidebar-container { display: flex; flex-direction: column; gap: 15px; }
 
 /* GACHA */
 .gacha-section {
@@ -154,7 +140,6 @@ main.hidden { display: none; }
 }
 
 .gacha-section h2 { font-size: 1.1rem; margin-bottom: 8px; color: #9ca3af; }
-
 .selector-maquinas { display: flex; gap: 5px; margin-bottom: 12px; width: 100%; }
 
 .btn-maquina {
@@ -172,95 +157,41 @@ main.hidden { display: none; }
 
 .btn-maquina.active { background: #3b82f6; color: white; border-color: #60a5fa; }
 
-.gacha-machine-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 12px;
-}
+.gacha-machine-container { width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; }
 
 .glass-dome {
-    width: 140px;
-    height: 100px;
+    width: 140px; height: 100px;
     background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.02));
-    border: 3px solid #4b5563;
-    border-bottom: none;
+    border: 3px solid #4b5563; border-bottom: none;
     border-radius: 70px 70px 10px 10px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    padding-bottom: 10px;
-    gap: 6px;
+    position: relative; overflow: hidden;
+    display: flex; justify-content: center; align-items: flex-end;
+    padding-bottom: 10px; gap: 6px;
 }
 
-.pokeball-mini {
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(to bottom, #ef4444 50%, #ffffff 50%);
-    border-radius: 50%;
-    border: 2px solid #111;
-    position: relative;
-}
+.pokeball-mini { width: 20px; height: 20px; background: linear-gradient(to bottom, #ef4444 50%, #ffffff 50%); border-radius: 50%; border: 2px solid #111; position: relative; }
 .pokeball-mini.super-ball { background: linear-gradient(to bottom, #3b82f6 50%, #ffffff 50%); }
 .pokeball-mini.ultra-ball { background: linear-gradient(to bottom, #1f2937 50%, #ffffff 50%); border-color: #fbbf24; }
-
-.pokeball-mini::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 5px; height: 5px;
-    background: #fff;
-    border: 2px solid #111;
-    border-radius: 50%;
-}
+.pokeball-mini::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 5px; height: 5px; background: #fff; border: 2px solid #111; border-radius: 50%; }
 .b1 { transform: translateY(-4px) rotate(-15deg); }
 .b2 { transform: translateY(-8px); }
 .b3 { transform: translateY(-2px) rotate(20deg); }
 
 .machine-base {
-    width: 180px;
-    height: 120px;
-    background: #374151;
-    border-radius: 12px;
+    width: 180px; height: 120px;
+    background: #374151; border-radius: 12px;
     border: 3px solid #4b5563;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 6px;
-    box-shadow: inset 0 8px 12px rgba(0,0,0,0.4);
+    display: flex; justify-content: center; align-items: center;
+    padding: 6px; box-shadow: inset 0 8px 12px rgba(0,0,0,0.4);
 }
 
-.gacha-screen {
-    width: 100%;
-    height: 100%;
-    background: #111827;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #1f2937;
-}
-
+.gacha-screen { width: 100%; height: 100%; background: #111827; border-radius: 8px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; border: 1px solid #1f2937; }
 .placeholder-text { color: #6b7280; font-size: 0.8rem; font-weight: 600; }
 .gacha-buttons { display: flex; gap: 8px; width: 100%; }
 
 .btn-primary {
-    flex: 1;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+    flex: 1; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none;
+    padding: 10px; font-size: 0.85rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;
     box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
 }
 
@@ -269,16 +200,7 @@ main.hidden { display: none; }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 /* INTERCAMBIO */
-.intercambio-section {
-    background: #1f2937;
-    border-radius: 14px;
-    padding: 15px;
-    border: 1px solid #374151;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
+.intercambio-section { background: #1f2937; border-radius: 14px; padding: 15px; border: 1px solid #374151; display: flex; flex-direction: column; align-items: center; }
 .intercambio-section h2 { font-size: 1rem; color: #9ca3af; margin-bottom: 4px; }
 .desc-intercambio { font-size: 0.7rem; color: #6b7280; text-align: center; margin-bottom: 10px; }
 .slots-intercambio { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -289,15 +211,9 @@ main.hidden { display: none; }
 .btn-secondary:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
 .btn-secondary:not(:disabled):hover { background: #2563eb; }
 
-/* INVENTARIO, POKÉDEX Y FILTROS */
+/* INVENTARIO, POKÉDEX, LOGROS Y STATS */
 .inventario-section, .pokedex-container-full {
-    background: #1f2937;
-    border-radius: 14px;
-    padding: 20px;
-    border: 1px solid #374151;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+    background: #1f2937; border-radius: 14px; padding: 20px; border: 1px solid #374151; display: flex; flex-direction: column; width: 100%;
 }
 
 .pokedex-container-full h2 { font-size: 1.3rem; color: #f3f4f6; margin-bottom: 5px; }
@@ -309,27 +225,24 @@ main.hidden { display: none; }
 
 .btn-action-top { background: #d97706; color: white; border: none; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; border-radius: 20px; cursor: pointer; transition: 0.2s; }
 .btn-action-top:hover { background: #b45309; }
-
 .badge-count { background: #374151; color: #9ca3af; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
 
-.filtros-container {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.filtros-container select {
-    background: #111827;
-    color: #f3f4f6;
-    border: 1px solid #374151;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    outline: none;
-    cursor: pointer;
-}
+.filtros-container { display: flex; gap: 10px; margin-bottom: 15px; }
+.filtros-container select { background: #111827; color: #f3f4f6; border: 1px solid #374151; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; outline: none; cursor: pointer; }
 
 .grid-inventario, .grid-pokedex { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-height: 520px; overflow-y: auto; padding-right: 5px; }
+
+/* LOGROS */
+.grid-logros { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; max-height: 520px; overflow-y: auto; padding-right: 5px; }
+.card-logro { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+.card-logro.completado { border-color: #10b981; background: linear-gradient(to bottom, #111827, #064e3b22); }
+.logro-info h3 { font-size: 0.95rem; color: #f3f4f6; margin-bottom: 4px; }
+.logro-info p { font-size: 0.75rem; color: #9ca3af; }
+.logro-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1f2937; padding-top: 8px; }
+.logro-recompensa { font-size: 0.8rem; font-weight: 600; color: #fbbf24; }
+.btn-reclamar-logro { background: #10b981; color: white; border: none; padding: 5px 12px; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+.btn-reclamar-logro:hover { filter: brightness(1.1); }
+.btn-reclamar-logro:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
 
 /* STATS */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
@@ -345,7 +258,6 @@ main.hidden { display: none; }
 .card-pokemon.Epico { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
 .card-pokemon.Legendario { border-color: #fbbf24; box-shadow: 0 0 14px rgba(251, 191, 36, 0.4); }
 
-/* ESTILOS SHINY ✨ */
 .card-pokemon.is-shiny {
     border-color: #38bdf8 !important;
     background: radial-gradient(circle at 50% 0%, #1e293b, #0f172a);
@@ -353,16 +265,10 @@ main.hidden { display: none; }
 }
 
 .badge-shiny {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    background: #38bdf8;
-    color: #0f172a;
-    font-size: 0.6rem;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px #38bdf8;
+    position: absolute; top: 6px; right: 6px;
+    background: #38bdf8; color: #0f172a;
+    font-size: 0.6rem; font-weight: 800;
+    padding: 2px 6px; border-radius: 10px; box-shadow: 0 0 8px #38bdf8;
 }
 
 .card-pokemon.bloqueado { border-color: #1f2937; background: #0d1117; opacity: 0.6; }
