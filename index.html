@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Gacha Master</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">🔴 PokeGacha UI</div>
+            <div class="header-right">
+                <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
+                <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
+                <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
+                <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
+                <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
+            </div>
+        </header>
+
+        <!-- VISTA DE JUEGO PRINCIPAL -->
+        <main id="vista-juego">
+            <div class="sidebar-container">
+                <!-- MÁQUINA GACHA -->
+                <section class="gacha-section">
+                    <h2>Máquina Gacha</h2>
+                    
+                    <div class="selector-maquinas">
+                        <button class="btn-maquina active" onclick="cambiarMaquina('normal', 100, this)">🔴 Normal (100)</button>
+                        <button class="btn-maquina" onclick="cambiarMaquina('super', 300, this)">🔵 Super (300)</button>
+                        <button class="btn-maquina" onclick="cambiarMaquina('ultra', 800, this)">⚫ Ultra (800)</button>
+                    </div>
+
+                    <div class="gacha-machine-container" id="contenedor-maquina">
+                        <div class="glass-dome">
+                            <div class="pokeball-mini b1" id="mini-1"></div>
+                            <div class="pokeball-mini b2" id="mini-2"></div>
+                            <div class="pokeball-mini b3" id="mini-3"></div>
+                        </div>
+                        <div class="machine-base">
+                            <div id="pantalla-gacha" class="gacha-screen">
+                                <span class="placeholder-text">¡Tira para abrir!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gacha-buttons">
+                        <button id="btn-tirar" class="btn-primary" onclick="tirarGacha(1)">Abrir x1 (<span id="costo-x1">100</span> 💰)</button>
+                        <button id="btn-tirar-10" class="btn-primary btn-x10" onclick="tirarGacha(10)">Abrir x10 (<span id="costo-x10">900</span> 💰)</button>
+                    </div>
+                </section>
+
+                <!-- INTERCAMBIO / FUSIÓN -->
+                <section class="intercambio-section">
+                    <h2>Intercambio / Fusión ♻️</h2>
+                    <p class="desc-intercambio">Selecciona 3 Pokémon para fusionar y obtener uno Épico.</p>
+                    
+                    <div id="slots-intercambio" class="slots-intercambio">
+                        <div class="slot-vacio" data-slot="0">Slot 1</div>
+                        <div class="slot-vacio" data-slot="1">Slot 2</div>
+                        <div class="slot-vacio" data-slot="2">Slot 3</div>
+                    </div>
+
+                    <button id="btn-fusionar" class="btn-secondary" onclick="ejecutarFusion()" disabled>Fusionar (3 Pokémon)</button>
+                </section>
+            </div>
+
+            <!-- INVENTARIO -->
+            <section class="inventario-section">
+                <div class="inventario-header">
+                    <h2>Tu Colección</h2>
+                    <div class="inventario-actions">
+                        <button class="btn-action-top" onclick="venderDuplicados()">Vender Duplicados ♻️</button>
+                        <span class="badge-count"><span id="cant-pokemon">0</span> Pokémon</span>
+                    </div>
+                </div>
+
+                <!-- FILTROS Y ORDENAMIENTO DE INVENTARIO -->
+                <div class="filtros-container">
+                    <select id="filtro-rareza" onchange="aplicarFiltrosInventario()">
+                        <option value="todas">Todas las Rarezas</option>
+                        <option value="Comun">Comunes</option>
+                        <option value="Raro">Raros</option>
+                        <option value="Epico">Épicos</option>
+                        <option value="Legendario">Legendarios</option>
+                        <option value="shiny">Solo Shiny ✨</option>
+                    </select>
+
+                    <select id="ordenar-por" onchange="aplicarFiltrosInventario()">
+                        <option value="recientes">Más Recientes</option>
+                        <option value="nivel">Mayor Nivel</option>
+                        <option value="rareza">Mayor Rareza</option>
+                        <option value="nombre">Nombre (A-Z)</option>
+                    </select>
+                </div>
+
+                <div id="grid-inventario" class="grid-inventario"></div>
+            </section>
+        </main>
+
+        <!-- VISTA DE POKÉDEX -->
+        <main id="vista-pokedex" class="hidden">
+            <section class="pokedex-container-full">
+                <h2>Registro Pokédex Completo</h2>
+                <p class="desc-pokedex">Descubre los Pokémon disponibles y completa tu colección mundial.</p>
+                <div id="grid-pokedex" class="grid-pokedex"></div>
+            </section>
+        </main>
+
+        <!-- VISTA DE ESTADÍSTICAS -->
+        <main id="vista-stats" class="hidden">
+            <section class="pokedex-container-full">
+                <h2>Panel de Estadísticas 📊</h2>
+                <p class="desc-pokedex">Resumen general de tu rendimiento y riqueza como entrenador.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Pokéballs Abiertas</h3>
+                        <p id="stat-tiradas">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pokémon Shiny Atrapados</h3>
+                        <p id="stat-shinies">0 ✨</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pokedólares Gastados</h3>
+                        <p id="stat-gastados">0 💰</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pokedólares Ganados</h3>
+                        <p id="stat-ganados">0 💰</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completitud Pokédex</h3>
+                        <p id="stat-porcentaje">0%</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL X10 -->
+    <div id="modal-x10" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>🎉 ¡Resultado de las 10 Pokéballs!</h2>
+            <div id="grid-x10" class="grid-x10"></div>
+            <button class="btn-primary" onclick="cerrarModalX10()">¡Genial!</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
