@@ -35,6 +35,116 @@ const POOL_EPICOS = [3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 10
 const POOL_RAROS = [2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140, 153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241];
 const POOL_COMUNES = POKEDEX_TOTAL.filter(id => !POOL_LEGENDARIOS.includes(id) && !POOL_EPICOS.includes(id) && !POOL_RAROS.includes(id));
 
+// DICCIONARIO DE EVOLUCIONES PRINCIPALES (ID Base ➔ Nivel Requerido y ID Objetivo)
+const MAPA_EVOLUCIONES = {
+    1: { nivel: 5, target: 2 },   // Bulbasaur -> Ivysaur
+    2: { nivel: 10, target: 3 },  // Ivysaur -> Venusaur
+    4: { nivel: 5, target: 5 },   // Charmander -> Charmeleon
+    5: { nivel: 10, target: 6 },  // Charmeleon -> Charizard
+    7: { nivel: 5, target: 8 },   // Squirtle -> Wartortle
+    8: { nivel: 10, target: 9 },  // Wartortle -> Blastoise
+    10: { nivel: 3, target: 11 }, // Caterpie -> Metapod
+    11: { nivel: 6, target: 12 }, // Metapod -> Butterfree
+    13: { nivel: 3, target: 14 }, // Weedle -> Kakuna
+    14: { nivel: 6, target: 15 }, // Kakuna -> Beedrill
+    16: { nivel: 4, target: 17 }, // Pidgey -> Pidgeotto
+    17: { nivel: 8, target: 18 }, // Pidgeotto -> Pidgeot
+    19: { nivel: 5, target: 20 }, // Rattata -> Raticate
+    21: { nivel: 5, target: 22 }, // Spearow -> Fearow
+    23: { nivel: 5, target: 24 }, // Ekans -> Arbok
+    25: { nivel: 6, target: 26 }, // Pikachu -> Raichu
+    27: { nivel: 5, target: 28 }, // Sandshrew -> Sandslash
+    29: { nivel: 4, target: 30 }, // NidoranF -> Nidorina
+    30: { nivel: 8, target: 31 }, // Nidorina -> Nidoqueen
+    32: { nivel: 4, target: 33 }, // NidoranM -> Nidorino
+    33: { nivel: 8, target: 34 }, // Nidorino -> Nidoking
+    41: { nivel: 5, target: 42 }, // Zubat -> Golbat
+    43: { nivel: 5, target: 44 }, // Oddish -> Gloom
+    46: { nivel: 5, target: 47 }, // Paras -> Parasect
+    48: { nivel: 5, target: 49 }, // Venonat -> Venomoth
+    52: { nivel: 5, target: 53 }, // Meowth -> Persian
+    54: { nivel: 5, target: 55 }, // Psyduck -> Golduck
+    56: { nivel: 5, target: 57 }, // Mankey -> Primeape
+    60: { nivel: 4, target: 61 }, // Poliwag -> Poliwhirl
+    63: { nivel: 4, target: 64 }, // Abra -> Kadabra
+    66: { nivel: 4, target: 67 }, // Machop -> Machoke
+    69: { nivel: 4, target: 70 }, // Bellsprout -> Weepinbell
+    72: { nivel: 5, target: 73 }, // Tentacool -> Tentacruel
+    74: { nivel: 4, target: 75 }, // Geodude -> Graveler
+    77: { nivel: 6, target: 78 }, // Ponyta -> Rapidash
+    79: { nivel: 6, target: 80 }, // Slowpoke -> Slowbro
+    81: { nivel: 5, target: 82 }, // Magnemite -> Magneton
+    84: { nivel: 5, target: 85 }, // Doduo -> Dodrio
+    86: { nivel: 5, target: 87 }, // Seel -> Dewgong
+    88: { nivel: 5, target: 89 }, // Grimer -> Muk
+    90: { nivel: 5, target: 91 }, // Shellder -> Cloyster
+    92: { nivel: 4, target: 93 }, // Gastly -> Haunter
+    96: { nivel: 5, target: 97 }, // Drowzee -> Hypno
+    98: { nivel: 5, target: 99 }, // Krabby -> Kingler
+    100: { nivel: 5, target: 101 }, // Voltorb -> Electrode
+    104: { nivel: 5, target: 105 }, // Cubone -> Marowak
+    109: { nivel: 5, target: 110 }, // Koffing -> Weezing
+    111: { nivel: 6, target: 112 }, // Rhyhorn -> Rhydon
+    116: { nivel: 5, target: 117 }, // Horsea -> Seadra
+    118: { nivel: 5, target: 119 }, // Goldeen -> Seaking
+    120: { nivel: 5, target: 121 }, // Staryu -> Starmie
+    129: { nivel: 5, target: 130 }, // Magikarp -> Gyarados
+    133: { nivel: 6, target: 134 }, // Eevee -> Vaporeon
+    138: { nivel: 6, target: 139 }, // Omanyte -> Omastar
+    140: { nivel: 6, target: 141 }, // Kabuto -> Kabutops
+    147: { nivel: 6, target: 148 }, // Dratini -> Dragonair
+    148: { nivel: 12, target: 149 }, // Dragonair -> Dragonite
+    152: { nivel: 5, target: 153 }, // Chikorita -> Bayleef
+    153: { nivel: 10, target: 154 }, // Bayleef -> Meganium
+    155: { nivel: 5, target: 156 }, // Cyndaquil -> Quilava
+    156: { nivel: 10, target: 157 }, // Quilava -> Typhlosion
+    158: { nivel: 5, target: 159 }, // Totodile -> Croconaw
+    159: { nivel: 10, target: 160 }, // Croconaw -> Feraligatr
+    161: { nivel: 4, target: 162 }, // Sentret -> Furret
+    163: { nivel: 4, target: 164 }, // Hoothoot -> Noctowl
+    165: { nivel: 4, target: 166 }, // Ledyba -> Ledian
+    167: { nivel: 4, target: 168 }, // Spinarak -> Ariados
+    170: { nivel: 5, target: 171 }, // Chinchou -> Lanturn
+    172: { nivel: 3, target: 25 },  // Pichu -> Pikachu
+    175: { nivel: 4, target: 176 }, // Togepi -> Togetic
+    177: { nivel: 5, target: 178 }, // Natu -> Xatu
+    179: { nivel: 4, target: 180 }, // Mareep -> Flaaffy
+    180: { nivel: 8, target: 181 }, // Flaaffy -> Ampharos
+    183: { nivel: 4, target: 184 }, // Marill -> Azumarill
+    187: { nivel: 4, target: 188 }, // Hoppip -> Skiploom
+    188: { nivel: 8, target: 189 }, // Skiploom -> Jumpluff
+    194: { nivel: 4, target: 195 }, // Wooper -> Quagsire
+    216: { nivel: 6, target: 217 }, // Teddiursa -> Ursaring
+    218: { nivel: 5, target: 219 }, // Slugma -> Magcargo
+    220: { nivel: 5, target: 221 }, // Swinub -> Piloswine
+    223: { nivel: 5, target: 224 }, // Remoraid -> Octillery
+    228: { nivel: 5, target: 229 }, // Houndour -> Houndoom
+    231: { nivel: 5, target: 232 }, // Phanpy -> Donphan
+    246: { nivel: 6, target: 247 }, // Larvitar -> Pupitar
+    247: { nivel: 12, target: 248 }  // Pupitar -> Tyranitar
+};
+
+// TABLA SIMPLIFICADA DE EFECTIVIDAD DE TIPOS
+const TABLA_TIPOS = {
+    fire: { grass: 1.6, ice: 1.6, bug: 1.6, steel: 1.6, water: 0.6, fire: 0.6, rock: 0.6, dragon: 0.6 },
+    water: { fire: 1.6, ground: 1.6, rock: 1.6, water: 0.6, grass: 0.6, dragon: 0.6 },
+    grass: { water: 1.6, ground: 1.6, rock: 1.6, fire: 0.6, grass: 0.6, poison: 0.6, flying: 0.6, bug: 0.6, dragon: 0.6, steel: 0.6 },
+    electric: { water: 1.6, flying: 1.6, electric: 0.6, grass: 0.6, dragon: 0.6, ground: 0 },
+    ice: { grass: 1.6, ground: 1.6, flying: 1.6, dragon: 1.6, fire: 0.6, water: 0.6, ice: 0.6, steel: 0.6 },
+    fighting: { normal: 1.6, ice: 1.6, rock: 1.6, dark: 1.6, steel: 1.6, poison: 0.6, flying: 0.6, psychic: 0.6, bug: 0.6, fairy: 0.6 },
+    poison: { grass: 1.6, fairy: 1.6, poison: 0.6, ground: 0.6, rock: 0.6, ghost: 0.6, steel: 0 },
+    ground: { fire: 1.6, electric: 1.6, poison: 1.6, rock: 1.6, steel: 1.6, grass: 0.6, bug: 0.6, flying: 0 },
+    flying: { grass: 1.6, fighting: 1.6, bug: 1.6, electric: 0.6, rock: 0.6, steel: 0.6 },
+    psychic: { fighting: 1.6, poison: 1.6, psychic: 0.6, steel: 0.6, dark: 0 },
+    bug: { grass: 1.6, psychic: 1.6, dark: 1.6, fire: 0.6, fighting: 0.6, poison: 0.6, flying: 0.6, ghost: 0.6, steel: 0.6, fairy: 0.6 },
+    rock: { fire: 1.6, ice: 1.6, flying: 1.6, bug: 1.6, fighting: 0.6, ground: 0.6, steel: 0.6 },
+    ghost: { psychic: 1.6, ghost: 1.6, dark: 0.6, normal: 0 },
+    dragon: { dragon: 1.6, steel: 0.6, fairy: 0 },
+    steel: { ice: 1.6, rock: 1.6, fairy: 1.6, fire: 0.6, water: 0.6, electric: 0.6, steel: 0.6 },
+    fairy: { fighting: 1.6, dragon: 1.6, dark: 1.6, fire: 0.6, poison: 0.6, steel: 0.6 },
+    normal: { rock: 0.6, steel: 0.6, ghost: 0 }
+};
+
 // MISIONES DIARIAS
 const MISIONES = [
     { id: 'mision_tirar_3', titulo: 'Abre 3 Pokéballs', desc: 'Realiza al menos 3 tiradas hoy.', recompensa: 250, condicion: () => stats.tiradasHoy >= 3 },
@@ -80,6 +190,14 @@ function reproducirSonido(tipo) {
         osc.type = 'sine'; osc.frequency.setValueAtTime(300, ahora); osc.frequency.exponentialRampToValueAtTime(600, ahora + 0.4);
         gainNode.gain.setValueAtTime(0.08, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.4);
         osc.start(ahora); osc.stop(ahora + 0.4);
+    } else if (tipo === 'golpe') {
+        osc.type = 'square'; osc.frequency.setValueAtTime(150, ahora); osc.frequency.exponentialRampToValueAtTime(40, ahora + 0.15);
+        gainNode.gain.setValueAtTime(0.2, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.15);
+        osc.start(ahora); osc.stop(ahora + 0.15);
+    } else if (tipo === 'super') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(250, ahora); osc.frequency.exponentialRampToValueAtTime(600, ahora + 0.25);
+        gainNode.gain.setValueAtTime(0.25, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.25);
+        osc.start(ahora); osc.stop(ahora + 0.25);
     } else if (tipo === 'shiny') {
         osc.type = 'triangle'; osc.frequency.setValueAtTime(500, ahora); osc.frequency.setValueAtTime(800, ahora + 0.1); osc.frequency.setValueAtTime(1200, ahora + 0.25);
         gainNode.gain.setValueAtTime(0.18, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.5);
@@ -173,11 +291,57 @@ function canjearCodigo() {
     } else { alert("❌ Código inválido."); }
 }
 
-// SISTEMA DE BATALLA / COMBATE POR TURNOS
-function seleccionarLuchador(instanciaId) {
+// EVOLUCIÓN POKÉMON
+async function evolucionarPokemon(instanciaId) {
+    const poke = inventario.find(p => p.instanciaId === instanciaId);
+    if (!poke || !MAPA_EVOLUCIONES[poke.id]) return;
+
+    const datosEvol = MAPA_EVOLUCIONES[poke.id];
+    if (poke.nivel < datosEvol.nivel) return;
+
+    try {
+        reproducirSonido('legendario');
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${datosEvol.target}`);
+        const datos = await res.json();
+
+        const spriteFinal = poke.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : datos.sprites.front_default;
+        let nuevaRareza = 'Comun';
+        let nuevoValor = 40;
+
+        if (POOL_LEGENDARIOS.includes(datos.id)) { nuevaRareza = 'Legendario'; nuevoValor = 500; }
+        else if (POOL_EPICOS.includes(datos.id)) { nuevaRareza = 'Epico'; nuevoValor = 180; }
+        else if (POOL_RAROS.includes(datos.id)) { nuevaRareza = 'Raro'; nuevoValor = 60; }
+
+        if (poke.esShiny) nuevoValor *= 3;
+
+        const nombreAnterior = poke.nombre;
+        poke.id = datos.id;
+        poke.nombre = poke.esShiny ? `✨ ${datos.name}` : datos.name;
+        poke.sprite = spriteFinal;
+        poke.rareza = nuevaRareza;
+        poke.valorBase = nuevoValor;
+        poke.tipo = datos.types[0].type.name;
+
+        if (!pokedexDescubiertos.includes(datos.id)) pokedexDescubiertos.push(datos.id);
+
+        actualizarUI();
+        alert(`✨ ¡Enhorabuena! Tu ${nombreAnterior} ha evolucionado a ${poke.nombre}! 🎉`);
+    } catch (e) { console.error("Error al evolucionar", e); }
+}
+
+// SISTEMA DE BATALLA / COMBATE CON TIPOS Y ANIMACIONES
+async function seleccionarLuchador(instanciaId) {
     reproducirSonido('normal');
     pokemonLuchador = inventario.find(p => p.instanciaId === instanciaId);
     if (!pokemonLuchador) return;
+
+    if (!pokemonLuchador.tipo) {
+        try {
+            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonLuchador.id}`);
+            const data = await res.json();
+            pokemonLuchador.tipo = data.types[0].type.name;
+        } catch (e) { pokemonLuchador.tipo = 'normal'; }
+    }
 
     const multiplicadorRareza = { 'Comun': 1, 'Raro': 1.5, 'Epico': 2.2, 'Legendario': 3.5 };
     const baseMult = multiplicadorRareza[pokemonLuchador.rareza] || 1;
@@ -185,14 +349,18 @@ function seleccionarLuchador(instanciaId) {
     hpJugadorMax = Math.round(100 * baseMult + (pokemonLuchador.nivel * 20));
     hpJugadorActual = hpJugadorMax;
 
-    document.getElementById('display-jugador').innerHTML = `<img src="${pokemonLuchador.sprite}" alt="${pokemonLuchador.nombre}">`;
+    document.getElementById('display-jugador').innerHTML = `<img id="img-jugador" src="${pokemonLuchador.sprite}" alt="${pokemonLuchador.nombre}">`;
     document.getElementById('text-hp-jugador').innerText = `${hpJugadorActual} / ${hpJugadorMax} HP`;
     document.getElementById('hp-jugador').style.width = '100%';
+
+    const badgeTipo = document.getElementById('badge-tipo-jugador');
+    badgeTipo.className = `badge-tipo tipo-${pokemonLuchador.tipo}`;
+    badgeTipo.innerText = pokemonLuchador.tipo;
 
     document.getElementById('btn-iniciar-batalla').disabled = false;
     document.getElementById('btn-atacar').disabled = true;
 
-    logBatalla(`¡Has seleccionado a ${pokemonLuchador.nombre} (Nv. ${pokemonLuchador.nivel})! Pulsa "Buscar Rival".`);
+    logBatalla(`¡Has seleccionado a ${pokemonLuchador.nombre} [${pokemonLuchador.tipo.toUpperCase()}]! Pulsa "Buscar Rival".`);
 }
 
 async function buscarRival() {
@@ -206,36 +374,74 @@ async function buscarRival() {
         pokemonRival = {
             nombre: datos.name,
             sprite: datos.sprites.front_default,
-            nivel: nivelRival
+            nivel: nivelRival,
+            tipo: datos.types[0].type.name
         };
 
         hpRivalMax = Math.round(90 + (nivelRival * 18));
         hpRivalActual = hpRivalMax;
 
-        document.getElementById('display-rival').innerHTML = `<img src="${pokemonRival.sprite}" alt="${pokemonRival.nombre}">`;
+        document.getElementById('display-rival').innerHTML = `<img id="img-rival" src="${pokemonRival.sprite}" alt="${pokemonRival.nombre}">`;
         document.getElementById('text-hp-rival').innerText = `${hpRivalActual} / ${hpRivalMax} HP`;
         document.getElementById('hp-rival').style.width = '100%';
+
+        const badgeTipo = document.getElementById('badge-tipo-rival');
+        badgeTipo.className = `badge-tipo tipo-${pokemonRival.tipo}`;
+        badgeTipo.innerText = pokemonRival.tipo;
 
         document.getElementById('btn-atacar').disabled = false;
         document.getElementById('btn-iniciar-batalla').disabled = true;
 
-        logBatalla(`⚠️ Un ${pokemonRival.nombre} salvaje (Nv. ${nivelRival}) ha aparecido. ¡A luchar!`);
+        logBatalla(`⚠️ Un ${pokemonRival.nombre} salvaje [${pokemonRival.tipo.toUpperCase()}] (Nv. ${nivelRival}) ha aparecido. ¡A luchar!`);
     } catch (e) { console.error(e); }
+}
+
+function calcularMultiplicadorTipo(tipoAtaque, tipoDefensor) {
+    if (TABLA_TIPOS[tipoAtaque] && TABLA_TIPOS[tipoAtaque][tipoDefensor] !== undefined) {
+        return TABLA_TIPOS[tipoAtaque][tipoDefensor];
+    }
+    return 1.0;
+}
+
+function animarImpacto(targetBoxId, danio, esCritico = false) {
+    const box = document.getElementById(targetBoxId);
+    const img = box.querySelector('img');
+    if (img) {
+        img.classList.remove('anim-hit');
+        void img.offsetWidth;
+        img.classList.add('anim-hit');
+    }
+
+    const floatEl = document.createElement('div');
+    floatEl.className = `texto-danio-flotante ${esCritico ? 'critico' : ''}`;
+    floatEl.innerText = `-${danio}`;
+    box.appendChild(floatEl);
+
+    setTimeout(() => { floatEl.remove(); }, 800);
 }
 
 function ejecutarAtaque() {
     if (!pokemonLuchador || !pokemonRival || hpJugadorActual <= 0 || hpRivalActual <= 0) return;
 
-    reproducirSonido('normal');
-
     // Turno Jugador
-    const danyoJugador = Math.round(15 + (pokemonLuchador.nivel * 5) + Math.random() * 10);
-    hpRivalActual = Math.max(0, hpRivalActual - danyoJugador);
+    const multTipo = calcularMultiplicadorTipo(pokemonLuchador.tipo, pokemonRival.tipo);
+    let danioBase = 15 + (pokemonLuchador.nivel * 5) + Math.random() * 8;
+    let danyoFinal = Math.round(danioBase * multTipo);
+
+    hpRivalActual = Math.max(0, hpRivalActual - danyoFinal);
     const pctRival = Math.round((hpRivalActual / hpRivalMax) * 100);
     document.getElementById('hp-rival').style.width = `${pctRival}%`;
     document.getElementById('text-hp-rival').innerText = `${hpRivalActual} / ${hpRivalMax} HP`;
 
-    logBatalla(`⚡ Tu ${pokemonLuchador.nombre} ataca y causa ${danyoJugador} de daño.`);
+    const esSuper = multTipo > 1.2;
+    animarImpacto('box-rival', danyoFinal, esSuper);
+    reproducirSonido(esSuper ? 'super' : 'golpe');
+
+    let msg = `⚡ Tu ${pokemonLuchador.nombre} ataca y causa ${danyoFinal} de daño.`;
+    let tipoLog = '';
+    if (multTipo > 1.2) { msg += ` ¡Es SÚPER EFECTIVO! 🔥`; tipoLog = 'super'; }
+    else if (multTipo < 0.8) { msg += ` No es muy efectivo... 🍃`; tipoLog = 'poco'; }
+    logBatalla(msg, tipoLog);
 
     if (hpRivalActual <= 0) {
         const premio = 150 + (pokemonRival.nivel * 20);
@@ -252,21 +458,34 @@ function ejecutarAtaque() {
     }
 
     // Turno Rival
+    document.getElementById('btn-atacar').disabled = true;
     setTimeout(() => {
-        const danyoRival = Math.round(10 + (pokemonRival.nivel * 4) + Math.random() * 8);
-        hpJugadorActual = Math.max(0, hpJugadorActual - danyoRival);
+        if (hpRivalActual <= 0) return;
+
+        const multRival = calcularMultiplicadorTipo(pokemonRival.tipo, pokemonLuchador.tipo);
+        let danioRivalBase = 10 + (pokemonRival.nivel * 4) + Math.random() * 6;
+        let danyoRivalFinal = Math.round(danioRivalBase * multRival);
+
+        hpJugadorActual = Math.max(0, hpJugadorActual - danyoRivalFinal);
         const pctJugador = Math.round((hpJugadorActual / hpJugadorMax) * 100);
         document.getElementById('hp-jugador').style.width = `${pctJugador}%`;
         document.getElementById('text-hp-jugador').innerText = `${hpJugadorActual} / ${hpJugadorMax} HP`;
 
-        logBatalla(`💥 ${pokemonRival.nombre} contraataca y te inflige ${danyoRival} de daño.`);
+        const esSuperRival = multRival > 1.2;
+        animarImpacto('box-jugador', danyoRivalFinal, esSuperRival);
+        reproducirSonido(esSuperRival ? 'super' : 'golpe');
+
+        let msgRival = `💥 ${pokemonRival.nombre} contraataca y te inflige ${danyoRivalFinal} de daño.`;
+        if (multRival > 1.2) msgRival += ` ¡Ataque súper efectivo!`;
+        logBatalla(msgRival, multRival > 1.2 ? 'super' : '');
 
         if (hpJugadorActual <= 0) {
             logBatalla(`☠️ Tu ${pokemonLuchador.nombre} ha sido debilitado. ¡Inténtalo de nuevo!`, 'derrota');
-            document.getElementById('btn-atacar').disabled = true;
             document.getElementById('btn-iniciar-batalla').disabled = false;
+        } else {
+            document.getElementById('btn-atacar').disabled = false;
         }
-    }, 600);
+    }, 700);
 }
 
 function logBatalla(msg, tipo = '') {
@@ -478,7 +697,9 @@ async function tirarGacha(cantidad) {
             const datos = await resp.json();
 
             const spriteFinal = config.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-            const nuevoPokemon = { id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1 };
+            const nuevoPokemon = { 
+                id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1, tipo: datos.types[0].type.name
+            };
 
             setTimeout(() => {
                 inventario.push(nuevoPokemon);
@@ -503,7 +724,7 @@ async function tirarGacha(cantidad) {
                 const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${conf.pokemonId}`);
                 const datos = await resp.json();
                 const spriteFinal = conf.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-                const poke = { id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1 };
+                const poke = { id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1, tipo: datos.types[0].type.name };
                 if (conf.esShiny) stats.shiniesTotales++;
                 obtenidos.push(poke);
                 inventario.push(poke);
@@ -631,7 +852,7 @@ async function ejecutarFusion() {
     try {
         const respuesta = await fetch(`https://pokeapi.co/api/v2/pokemon/${idAleatorio}`);
         const datos = await respuesta.json();
-        const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 1 };
+        const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 1, tipo: datos.types[0].type.name };
         inventario.push(nuevoPokemon);
         stats.fusionesTotales++;
         if (!pokedexDescubiertos.includes(datos.id)) pokedexDescubiertos.push(datos.id);
@@ -694,9 +915,27 @@ function renderizarInventarioGrid(lista) {
 
     lista.forEach(poke => {
         const estaSeleccionado = seleccionadosFusion.includes(poke.instanciaId);
+        const datosEvol = MAPA_EVOLUCIONES[poke.id];
+        const puedeEvolucionar = datosEvol && poke.nivel >= datosEvol.nivel;
+
         const card = document.createElement('div');
         card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
-        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>Nv. ${poke.nivel} (${poke.rareza})</small><button class="btn-card btn-subir" onclick="subirNivel(${poke.instanciaId})">Subir Nv. (${poke.nivel * 30} 💰)</button><button class="btn-card btn-vender" onclick="venderPokemon(${poke.instanciaId})">Vender (+${poke.valorBase + (poke.nivel * 15)} 💰)</button><button class="btn-card btn-seleccionar ${estaSeleccionado ? 'seleccionado' : ''}" onclick="seleccionarParaFusion(${poke.instanciaId})">${estaSeleccionado ? 'Quitar' : 'Fusionar'}</button>`;
+        
+        let botonEvolucionHTML = '';
+        if (puedeEvolucionar) {
+            botonEvolucionHTML = `<button class="btn-card btn-evolucionar" onclick="evolucionarPokemon(${poke.instanciaId})">Evolucionar 🧬</button>`;
+        }
+
+        card.innerHTML = `
+            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
+            <img src="${poke.sprite}" alt="${poke.nombre}">
+            <strong>${poke.nombre}</strong>
+            <small>Nv. ${poke.nivel} (${poke.rareza})</small>
+            ${botonEvolucionHTML}
+            <button class="btn-card btn-subir" onclick="subirNivel(${poke.instanciaId})">Subir Nv. (${poke.nivel * 30} 💰)</button>
+            <button class="btn-card btn-vender" onclick="venderPokemon(${poke.instanciaId})">Vender (+${poke.valorBase + (poke.nivel * 15)} 💰)</button>
+            <button class="btn-card btn-seleccionar ${estaSeleccionado ? 'seleccionado' : ''}" onclick="seleccionarParaFusion(${poke.instanciaId})">${estaSeleccionado ? 'Quitar' : 'Fusionar'}</button>
+        `;
         grid.appendChild(card);
     });
 }

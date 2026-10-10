@@ -10,7 +10,7 @@
 
     <!-- METADATOS SOCIALES -->
     <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, completa misiones diarias y atrapa los 251 Pokémon!">
+    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, haz evolucionar a tus Pokémon y atrapa los 251 Pokémon!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -128,12 +128,13 @@
 
             <section class="pokedex-container-full">
                 <h2>Arena de Batalla Pokémon ⚔️</h2>
-                <p class="desc-pokedex">Enfréntate a un rival salvaje en combates por turnos y gana Pokedólares.</p>
+                <p class="desc-pokedex">Aprovecha la ventaja elemental de los tipos para asestar golpes súper efectivos.</p>
                 
                 <div class="battle-arena">
                     <div class="fighter-box" id="box-rival">
                         <h3>Rival Salvaje</h3>
                         <div id="display-rival" class="fighter-display"><p>Esperando combate...</p></div>
+                        <span id="badge-tipo-rival" class="badge-tipo hidden">-</span>
                         <div class="hp-bar-bg"><div id="hp-rival" class="hp-bar-fill" style="width: 100%;"></div></div>
                         <span id="text-hp-rival">0 / 0 HP</span>
                     </div>
@@ -143,6 +144,7 @@
                     <div class="fighter-box" id="box-jugador">
                         <h3>Tu Pokémon</h3>
                         <div id="display-jugador" class="fighter-display"><p>Elige un Pokémon a la izquierda</p></div>
+                        <span id="badge-tipo-jugador" class="badge-tipo hidden">-</span>
                         <div class="hp-bar-bg"><div id="hp-jugador" class="hp-bar-fill" style="width: 100%;"></div></div>
                         <span id="text-hp-jugador">0 / 0 HP</span>
                     </div>
