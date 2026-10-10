@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Gacha Master</title>
+    <title>Pokémon Gacha Master - ¡Colecciona y Fusiona!</title>
+
+    <!-- FAVICON (Icono de pestaña Pokéball) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M2,50 A48,48 0 0,0 98,50 Z' fill='white'/><line x1='2' y1='50' x2='98' y2='50' stroke='%23111' stroke-width='8'/><circle cx='50' cy='50' r='14' fill='white' stroke='%23111' stroke-width='8'/></svg>">
+
+    <!-- METADATOS PARA REDES SOCIALES -->
+    <meta property="og:title" content="🔴 Pokémon Gacha Master">
+    <meta property="og:description" content="¡Abre Pokéballs, colecciona Pokémon Shiny variocolor, fusionales e incrementa tu colección en este simulador gacha web!">
+    <meta property="og:type" content="website">
+    <meta property="og:theme-color" content="#ef4444">
+
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
@@ -13,6 +23,8 @@
         <header>
             <div class="logo">🔴 PokeGacha UI</div>
             <div class="header-right">
+                <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
+                <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
@@ -78,7 +90,7 @@
                     </div>
                 </div>
 
-                <!-- FILTROS Y ORDENAMIENTO DE INVENTARIO -->
+                <!-- FILTROS Y ORDENAMIENTO -->
                 <div class="filtros-container">
                     <select id="filtro-rareza" onchange="aplicarFiltrosInventario()">
                         <option value="todas">Todas las Rarezas</option>
@@ -140,6 +152,19 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- MODAL PARA CANJEAR CÓDIGO PROMONIONAL -->
+    <div id="modal-codigo" class="modal-overlay hidden">
+        <div class="modal-content modal-codigo-content">
+            <h2>🎟️ Canjear Código Promocional</h2>
+            <p>Introduce tu código para recibir Pokedólares u otras recompensas especiales.</p>
+            <input type="text" id="input-codigo" placeholder="Introduce tu código aquí..." maxlength="20" autocomplete="off">
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="canjearCodigo()">Canjear</button>
+                <button class="btn-secondary" onclick="cerrarModalCodigo()">Cerrar</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL X10 -->

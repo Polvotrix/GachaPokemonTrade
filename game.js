@@ -14,17 +14,41 @@ let stats = {
     ganadosTotales: 0
 };
 
+// CONFIGURACIÓN DE CÓDIGOS PROMOCIONALES (Ilimitados para testeo)
+const CODIGOS_VALIDOS = {
+    "0711": { recompensa: 1000, tipo: "monedas", descripcion: "1.000 Pokedólares" }
+};
+
+// ESTADO DE AUDIO Y MÚSICA CHIPTUNE
+let audioSilenciado = false;
+let musicaIniciada = false;
+let audioCtx = null;
+let bgmTimer = null;
+
 const POOL_COMUNES = [1, 4, 7, 10, 13, 16, 19, 21, 23, 25, 27, 29, 32, 35, 37, 39, 41, 43, 46, 48, 50, 52, 54, 56, 60, 63, 66, 69, 72, 74, 77, 79, 81, 84, 86, 88, 90, 92, 96, 98, 100, 102, 104, 108, 111, 116, 118, 120, 129, 133];
 const POOL_RAROS = [2, 5, 8, 11, 14, 17, 20, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 75, 78, 82, 85, 87, 89, 93, 97, 99, 103, 105, 109, 112, 117, 119, 121, 123, 125, 126, 128, 130, 138, 140];
 const POOL_EPICOS = [3, 6, 9, 12, 15, 18, 31, 34, 62, 65, 68, 71, 76, 83, 94, 95, 107, 110, 113, 114, 115, 122, 124, 127, 131, 134, 135, 136, 139, 141, 142, 149, 154, 157, 160];
 const POOL_LEGENDARIOS = [144, 145, 146, 150, 151, 249, 250, 251, 380, 381, 382, 383, 384, 385, 386, 483, 484, 487, 488, 493];
 const POKEDEX_TOTAL = [...POOL_COMUNES.slice(0, 25), ...POOL_RAROS.slice(0, 15), ...POOL_EPICOS.slice(0, 12), ...POOL_LEGENDARIOS.slice(0, 8)];
 
-// AUDIO SINTETIZADOR
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// AUDIO
+function inicializarAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    if (!musicaIniciada && !audioSilenciado) {
+        iniciarMusicaFondoChiptune();
+        musicaIniciada = true;
+    }
+}
+
 function reproducirSonido(tipo) {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioSilenciado) return;
+    inicializarAudioContext();
+
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     osc.connect(gainNode);
@@ -33,21 +57,61 @@ function reproducirSonido(tipo) {
 
     if (tipo === 'tirar') {
         osc.type = 'sine'; osc.frequency.setValueAtTime(300, ahora); osc.frequency.exponentialRampToValueAtTime(600, ahora + 0.4);
-        gainNode.gain.setValueAtTime(0.1, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.4);
+        gainNode.gain.setValueAtTime(0.08, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.4);
         osc.start(ahora); osc.stop(ahora + 0.4);
     } else if (tipo === 'shiny') {
         osc.type = 'triangle'; osc.frequency.setValueAtTime(500, ahora); osc.frequency.setValueAtTime(800, ahora + 0.1); osc.frequency.setValueAtTime(1200, ahora + 0.25);
-        gainNode.gain.setValueAtTime(0.25, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.5);
+        gainNode.gain.setValueAtTime(0.18, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.5);
         osc.start(ahora); osc.stop(ahora + 0.5);
     } else if (tipo === 'legendario') {
         osc.type = 'triangle'; osc.frequency.setValueAtTime(400, ahora); osc.frequency.setValueAtTime(600, ahora + 0.15); osc.frequency.setValueAtTime(800, ahora + 0.3);
-        gainNode.gain.setValueAtTime(0.2, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.6);
+        gainNode.gain.setValueAtTime(0.15, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.6);
         osc.start(ahora); osc.stop(ahora + 0.6);
     } else {
-        osc.type = 'square'; osc.frequency.setValueAtTime(200, ahora); gainNode.gain.setValueAtTime(0.08, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.15);
+        osc.type = 'square'; osc.frequency.setValueAtTime(200, ahora); gainNode.gain.setValueAtTime(0.05, ahora); gainNode.gain.linearRampToValueAtTime(0, ahora + 0.15);
         osc.start(ahora); osc.stop(ahora + 0.15);
     }
 }
+
+function iniciarMusicaFondoChiptune() {
+    if (bgmTimer) clearInterval(bgmTimer);
+    const melodia = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 349.23, 440.00, 349.23, 261.63, 329.63];
+    let paso = 0;
+
+    bgmTimer = setInterval(() => {
+        if (audioSilenciado || !audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(melodia[paso], audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.35);
+        paso = (paso + 1) % melodia.length;
+    }, 400);
+}
+
+function alternarAudio() {
+    audioSilenciado = !audioSilenciado;
+    const btnAudio = document.getElementById('btn-audio');
+    if (audioSilenciado) {
+        btnAudio.innerText = "🔇 Música: OFF";
+        btnAudio.classList.add('muted');
+    } else {
+        btnAudio.innerText = "🔊 Música: ON";
+        btnAudio.classList.remove('muted');
+        inicializarAudioContext();
+    }
+}
+
+window.addEventListener('click', () => {
+    if (!musicaIniciada && !audioSilenciado) {
+        inicializarAudioContext();
+    }
+}, { once: true });
 
 // LOCALSTORAGE
 function guardarPartida() {
@@ -65,6 +129,41 @@ function cargarPartida() {
             pokedexDescubiertos = data.pokedexDescubiertos ?? [];
             stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0 };
         } catch (e) { console.error("Error al cargar guardado", e); }
+    }
+}
+
+// LÓGICA DE CANJEO DE CÓDIGOS (Ilimitado para testeo)
+function abrirModalCodigo() {
+    reproducirSonido('normal');
+    document.getElementById('input-codigo').value = '';
+    document.getElementById('modal-codigo').classList.remove('hidden');
+}
+
+function cerrarModalCodigo() {
+    reproducirSonido('normal');
+    document.getElementById('modal-codigo').classList.add('hidden');
+}
+
+function canjearCodigo() {
+    const input = document.getElementById('input-codigo');
+    const codigoIngresado = input.value.trim().toUpperCase();
+
+    if (!codigoIngresado) {
+        alert("Por favor, introduce un código.");
+        return;
+    }
+
+    if (CODIGOS_VALIDOS[codigoIngresado]) {
+        const promo = CODIGOS_VALIDOS[codigoIngresado];
+        monedas += promo.recompensa;
+        stats.ganadosTotales += promo.recompensa;
+
+        reproducirSonido('legendario');
+        actualizarUI();
+        cerrarModalCodigo();
+        alert(`🎉 ¡Código canjeado con éxito! Has recibido ${promo.descripcion}.`);
+    } else {
+        alert("❌ Código inválido. Comprueba si lo has escrito correctamente.");
     }
 }
 
@@ -147,7 +246,7 @@ function reclamarDiario() {
     alert("🎉 ¡Has recibido tus 500 Pokedólares diarios!");
 }
 
-// OBTENCIÓN GACHA CON MECÁNICA SHINY (2% Probabilidad)
+// GACHA CON MECÁNICA SHINY (2%)
 function obtenerPokemonAleatorioConfig() {
     const prob = Math.random() * 100;
     let pokemonId, rareza, valorBase;
@@ -169,11 +268,8 @@ function obtenerPokemonAleatorioConfig() {
         else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; }
     }
 
-    // Un 2% de probabilidad de que sea Shiny
     const esShiny = Math.random() < 0.02;
-    if (esShiny) {
-        valorBase = valorBase * 3; // Triplica el valor si es Shiny
-    }
+    if (esShiny) { valorBase = valorBase * 3; }
 
     return { pokemonId, rareza, valorBase, esShiny };
 }
@@ -424,14 +520,12 @@ function aplicarFiltrosInventario() {
 
     let listaFiltrada = [...inventario];
 
-    // Aplicar Filtro de Rareza o Shiny
     if (filtroRareza === 'shiny') {
         listaFiltrada = listaFiltrada.filter(p => p.esShiny);
     } else if (filtroRareza !== 'todas') {
         listaFiltrada = listaFiltrada.filter(p => p.rareza === filtroRareza);
     }
 
-    // Aplicar Criterio de Orden
     if (ordenarPor === 'nivel') {
         listaFiltrada.sort((a, b) => b.nivel - a.nivel);
     } else if (ordenarPor === 'nombre') {
@@ -440,7 +534,6 @@ function aplicarFiltrosInventario() {
         const ordenRarezas = { 'Legendario': 4, 'Epico': 3, 'Raro': 2, 'Comun': 1 };
         listaFiltrada.sort((a, b) => ordenRarezas[b.rareza] - ordenRarezas[a.rareza]);
     } else {
-        // 'recientes' (orden natural por ID de instancia)
         listaFiltrada.reverse();
     }
 
