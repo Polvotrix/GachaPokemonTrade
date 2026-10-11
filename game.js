@@ -1,4 +1,4 @@
-// SISTEMA DE USUARIO AUTOMÁTICO
+// SISTEMA DE USUARIO AUTOMÁTICO Y MULTI-PERFIL
 let usuarioActual = "Entrenador";
 let idUsuarioActual = localStorage.getItem('pokeGachaIdUsuario') || null;
 let amigosLista = [];
@@ -109,22 +109,23 @@ const TABLA_TIPOS = {
     normal: { rock: 0.6, steel: 0.6, ghost: 0 }
 };
 
+// RECOMPENSAS REBALANCEADAS (MUCHO MÁS BAJAS)
 const LIDERES_TORRE = [
-    { piso: 1, nombre: "Entrenador Novato", idPoke: 504, recompensa: 400 },
-    { piso: 2, nombre: "Líder Cilan/Chili/Cress", idPoke: 512, recompensa: 700 },
-    { piso: 3, nombre: "Líder Lenora", idPoke: 505, recompensa: 1000 },
-    { piso: 4, nombre: "Líder Burgh", idPoke: 542, recompensa: 1500 },
-    { piso: 5, nombre: "Líder Elesa", idPoke: 523, recompensa: 2200 },
-    { piso: 6, nombre: "Líder Clay", idPoke: 530, recompensa: 3000 },
-    { piso: 7, nombre: "Líder Skyla", idPoke: 581, recompensa: 4000 },
-    { piso: 8, nombre: "Líder Brycen", idPoke: 615, recompensa: 5000 },
-    { piso: 9, nombre: "Líder Drayden/Iris", idPoke: 612, recompensa: 6500 },
-    { piso: 10, nombre: "Rival Cheren", idPoke: 508, recompensa: 8000 },
-    { piso: 11, nombre: "Líder del Equipo Plasma N", idPoke: 571, recompensa: 10000 },
-    { piso: 12, nombre: "Dragón Legendario Reshiram", idPoke: 643, recompensa: 13000 },
-    { piso: 13, nombre: "Dragón Legendario Zekrom", idPoke: 644, recompensa: 16000 },
-    { piso: 14, nombre: "Dragón Soberano Kyurem", idPoke: 646, recompensa: 20000 },
-    { piso: 15, nombre: "Mítico Genesect", idPoke: 649, recompensa: 30000 }
+    { piso: 1, nombre: "Entrenador Novato", idPoke: 504, recompensa: 30 },
+    { piso: 2, nombre: "Líder Cilan/Chili/Cress", idPoke: 512, recompensa: 50 },
+    { piso: 3, nombre: "Líder Lenora", idPoke: 505, recompensa: 75 },
+    { piso: 4, nombre: "Líder Burgh", idPoke: 542, recompensa: 100 },
+    { piso: 5, nombre: "Líder Elesa", idPoke: 523, recompensa: 140 },
+    { piso: 6, nombre: "Líder Clay", idPoke: 530, recompensa: 180 },
+    { piso: 7, nombre: "Líder Skyla", idPoke: 581, recompensa: 220 },
+    { piso: 8, nombre: "Líder Brycen", idPoke: 615, recompensa: 280 },
+    { piso: 9, nombre: "Líder Drayden/Iris", idPoke: 612, recompensa: 350 },
+    { piso: 10, nombre: "Rival Cheren", idPoke: 508, recompensa: 450 },
+    { piso: 11, nombre: "Líder del Equipo Plasma N", idPoke: 571, recompensa: 550 },
+    { piso: 12, nombre: "Dragón Legendario Reshiram", idPoke: 643, recompensa: 650 },
+    { piso: 13, nombre: "Dragón Legendario Zekrom", idPoke: 644, recompensa: 750 },
+    { piso: 14, nombre: "Dragón Soberano Kyurem", idPoke: 646, recompensa: 850 },
+    { piso: 15, nombre: "Mítico Genesect", idPoke: 649, recompensa: 1000 }
 ];
 
 // MISIONES Y LOGROS
@@ -166,9 +167,7 @@ function mostrarToast(titulo, desc) {
     container.appendChild(toast);
     reproducirSonido('legendario');
 
-    setTimeout(() => {
-        toast.remove();
-    }, 4000);
+    setTimeout(() => { toast.remove(); }, 4000);
 }
 
 function verificarNotificacionesMisionesYLogros() {
@@ -196,7 +195,7 @@ function generarIdNumerico() {
 }
 
 function inicializarJugadorDirecto() {
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    let cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
 
     if (!idUsuarioActual || !cuentas[idUsuarioActual]) {
         idUsuarioActual = generarIdNumerico();
@@ -204,7 +203,7 @@ function inicializarJugadorDirecto() {
         
         cuentas[idUsuarioActual] = {
             id: String(idUsuarioActual),
-            nombre: "Entrenador",
+            nombre: "Entrenador " + idUsuarioActual,
             datos: null,
             amigos: []
         };
@@ -218,6 +217,26 @@ function inicializarJugadorDirecto() {
 
     cargarPartida();
     actualizarUI();
+}
+
+function crearNuevoPerfilDemo() {
+    let cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
+    let nuevoId = generarIdNumerico();
+    while (cuentas[nuevoId]) { nuevoId = generarIdNumerico(); }
+
+    cuentas[nuevoId] = {
+        id: String(nuevoId),
+        nombre: "Entrenador " + nuevoId,
+        datos: { monedas: 1000, inventario: [], pokedexDescubiertos: [], logrosReclamados: [], misionesReclamadas: [], stats: { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 } },
+        amigos: []
+    };
+
+    localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
+    localStorage.setItem('pokeGachaIdUsuario', String(nuevoId));
+    idUsuarioActual = String(nuevoId);
+
+    alert(`🎉 ¡Nuevo perfil Creado! ID: #${nuevoId}. Se cambiará a este perfil inmediatamente.`);
+    inicializarJugadorDirecto();
 }
 
 function guardarPartida() {
@@ -377,7 +396,7 @@ function reclamarLogro(logroId) {
     }
 }
 
-// FIX SISTEMA DE AMIGOS
+// CORRECCIÓN TOTAL SISTEMA DE AMIGOS
 function agregarAmigo() {
     const input = document.getElementById('input-nuevo-amigo');
     const idAmigoIngresado = String(input.value.trim());
@@ -387,10 +406,10 @@ function agregarAmigo() {
 
     const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
     
-    const idEncontrado = Object.keys(cuentas).find(id => String(id) === idAmigoIngresado);
+    let idEncontrado = Object.keys(cuentas).find(id => String(id) === idAmigoIngresado);
 
     if (!idEncontrado) { 
-        alert("❌ El ID de entrenador no existe en el sistema local."); 
+        alert("❌ El ID de entrenador no existe en este navegador.\n\n💡 CONSEJO: Haz clic en el botón '+ Nuevo Perfil' en la barra superior para crear un segundo usuario de prueba con un ID de 5 números."); 
         return; 
     }
 
@@ -712,28 +731,29 @@ function calcularMultiplicadorTipo(tipoAtaque, tipoDefensor) {
     return 1.0;
 }
 
-// ANIMACIÓN DE IMPACTO Y SACUDIDA MEJORADA
-function animarImpacto(targetBoxId, danio, esCritico = false) {
-    const box = document.getElementById(targetBoxId);
-    if (!box) return;
+// ANIMACIÓN DE IMPACTO, PARPADEO DE DAÑO Y EMBESTIDA
+function animarAtaqueYDanio(attackerBoxId, defenderBoxId, danio, esCritico = false, esJugadorAtacando = true) {
+    const attacker = document.getElementById(attackerBoxId);
+    const defender = document.getElementById(defenderBoxId);
+    if (!attacker || !defender) return;
 
-    box.classList.remove('screen-shake', 'flash-effect');
-    void box.offsetWidth;
-    box.classList.add(esCritico ? 'screen-shake' : 'flash-effect');
+    attacker.classList.remove('attack-lunge-right', 'attack-lunge-left');
+    void attacker.offsetWidth;
+    attacker.classList.add(esJugadorAtacando ? 'attack-lunge-left' : 'attack-lunge-right');
 
-    const img = box.querySelector('img');
-    if (img) {
-        img.classList.remove('anim-hit');
-        void img.offsetWidth;
-        img.classList.add('anim-hit');
-    }
+    setTimeout(() => {
+        defender.classList.remove('damage-blink', 'screen-shake');
+        void defender.offsetWidth;
+        defender.classList.add('damage-blink');
+        if (esCritico) defender.classList.add('screen-shake');
 
-    const floatEl = document.createElement('div');
-    floatEl.className = `texto-danio-flotante ${esCritico ? 'critico' : ''}`;
-    floatEl.innerText = esCritico ? `💥 -${danio}` : `-${danio}`;
-    box.appendChild(floatEl);
+        const floatEl = document.createElement('div');
+        floatEl.className = `texto-danio-flotante ${esCritico ? 'critico' : ''}`;
+        floatEl.innerText = esCritico ? `💥 -${danio}` : `-${danio}`;
+        defender.appendChild(floatEl);
 
-    setTimeout(() => { floatEl.remove(); }, 800);
+        setTimeout(() => { floatEl.remove(); }, 800);
+    }, 150);
 }
 
 function mostrarResumenCombate(texto, tipoClase = '') {
@@ -742,7 +762,7 @@ function mostrarResumenCombate(texto, tipoClase = '') {
     document.getElementById('texto-resumen-combate').innerHTML = texto;
 }
 
-// COMBATE ARENA (CON PERMADETH / ELIMINACIÓN DE POKÉMON SI MUERE)
+// COMBATE ARENA
 function ejecutarAtaque() {
     if (!pokemonLuchador || !pokemonRival || hpJugadorActual <= 0 || hpRivalActual <= 0) return;
 
@@ -756,7 +776,7 @@ function ejecutarAtaque() {
     document.getElementById('text-hp-rival').innerText = `${hpRivalActual} / ${hpRivalMax} HP`;
 
     const esSuper = multTipo > 1.2;
-    animarImpacto('box-rival', danyoFinal, esSuper);
+    animarAtaqueYDanio('box-jugador', 'box-rival', danyoFinal, esSuper, true);
     reproducirSonido(esSuper ? 'super' : 'golpe');
 
     if (hpRivalActual <= 0) {
@@ -788,17 +808,14 @@ function ejecutarAtaque() {
         document.getElementById('text-hp-jugador').innerText = `${hpJugadorActual} / ${hpJugadorMax} HP`;
 
         const esSuperRival = multRival > 1.2;
-        animarImpacto('box-jugador', danyoRivalFinal, esSuperRival);
+        animarAtaqueYDanio('box-rival', 'box-jugador', danyoRivalFinal, esSuperRival, false);
         reproducirSonido(esSuperRival ? 'super' : 'golpe');
 
         if (hpJugadorActual <= 0) {
-            // PERMA-DEATH: Se elimina el Pokémon del inventario
             const indexDead = inventario.findIndex(p => p.instanciaId === pokemonLuchador.instanciaId);
-            if (indexDead !== -1) {
-                inventario.splice(indexDead, 1);
-            }
+            if (indexDead !== -1) { inventario.splice(indexDead, 1); }
 
-            mostrarResumenCombate(`☠️ ¡DESASTRE! Tu ${pokemonLuchador.nombre} cayó debilitado y ha sido eliminado de tu colección para siempre.`, 'perdido');
+            mostrarResumenCombate(`☠️ ¡DESASTRE! Tu ${pokemonLuchador.nombre} cayó debilitado y ha sido eliminado para siempre.`, 'perdido');
             document.getElementById('display-jugador').innerHTML = `<p>Elige un Pokémon a la izquierda</p>`;
             document.getElementById('btn-iniciar-batalla').disabled = true;
             document.getElementById('btn-atacar').disabled = true;
@@ -1048,10 +1065,14 @@ function mostrarModalX10(lista) {
 
 function cerrarModalX10() { reproducirSonido('normal'); document.getElementById('modal-x10').classList.add('hidden'); }
 
-// INVENTARIO Y FUSIÓN
+// INVENTARIO Y FUSIÓN CON NIVEL MÁXIMO 100
 function subirNivel(instanciaId) {
     reproducirSonido('normal');
     const poke = inventario.find(p => p.instanciaId === instanciaId);
+    
+    if (!poke) return;
+    if (poke.nivel >= 100) { alert("⭐ Este Pokémon ya ha alcanzado el NIVEL MÁXIMO (100)."); return; }
+
     const costoSubir = poke.nivel * 30;
     if (monedas >= costoSubir) {
         monedas -= costoSubir; stats.gastadosTotales += costoSubir;
@@ -1179,6 +1200,7 @@ function renderizarInventarioGrid(lista) {
         const estaSeleccionado = seleccionadosFusion.includes(poke.instanciaId);
         const datosEvol = MAPA_EVOLUCIONES[poke.id];
         const puedeEvolucionar = datosEvol && poke.nivel >= datosEvol.nivel;
+        const esMaxLevel = poke.nivel >= 100;
 
         const card = document.createElement('div');
         card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
@@ -1192,9 +1214,11 @@ function renderizarInventarioGrid(lista) {
             ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
             <img src="${poke.sprite}" alt="${poke.nombre}">
             <strong>${poke.nombre}</strong>
-            <small>Nv. ${poke.nivel} (${poke.rareza})</small>
+            <small>Nv. ${poke.nivel}${esMaxLevel ? ' (MAX)' : ''} (${poke.rareza})</small>
             ${botonEvolucionHTML}
-            <button class="btn-card btn-subir" onclick="subirNivel(${poke.instanciaId})">Subir Nv. (${poke.nivel * 30} 💰)</button>
+            <button class="btn-card btn-subir" ${esMaxLevel ? 'disabled' : ''} onclick="subirNivel(${poke.instanciaId})">
+                ${esMaxLevel ? 'MAX Nv. 100 ⭐' : `Subir Nv. (${poke.nivel * 30} 💰)`}
+            </button>
             <button class="btn-card btn-vender" onclick="venderPokemon(${poke.instanciaId})">Vender (+${poke.valorBase + (poke.nivel * 15)} 💰)</button>
             <button class="btn-card btn-seleccionar ${estaSeleccionado ? 'seleccionado' : ''}" onclick="seleccionarParaFusion(${poke.instanciaId})">${estaSeleccionado ? 'Quitar' : 'Fusionar'}</button>
         `;
@@ -1215,7 +1239,7 @@ function renderizarPokedexCompleta() {
     });
 }
 
-// TORRE DE BATALLA (CON PERMADETH SI MUERE)
+// TORRE DE BATALLA (REINICIO AUTOMÁTICO EN EL PISO 15 Y RECOMPENSAS REBAJADAS)
 async function iniciarPisoTorre() {
     if (!pokemonLuchadorTorre) { alert("❌ Primero selecciona un Pokémon en el menú lateral de la Torre."); return; }
     reproducirSonido('normal');
@@ -1269,7 +1293,7 @@ function ejecutarAtaqueTorre() {
     document.getElementById('hp-lider-torre').style.width = `${pctLider}%`;
     document.getElementById('text-hp-lider-torre').innerText = `${hpLiderTorreActual} / ${hpLiderTorreMax} HP`;
     
-    animarImpacto('box-lider-torre', Math.round(danioBase), false);
+    animarAtaqueYDanio('box-jugador-torre', 'box-lider-torre', Math.round(danioBase), false, true);
     reproducirSonido('golpe');
 
     if (hpLiderTorreActual <= 0) {
@@ -1281,12 +1305,16 @@ function ejecutarAtaqueTorre() {
         mostrarResumenTorre(`🏆 ¡PISO ${pisoTorreActual} SUPERADO! Ganaste +${liderTorreActual.recompensa} Pokedólares 💰`, 'ganado');
         
         document.getElementById('controles-torre').classList.add('hidden');
+        
+        // REINICIO AUTOMÁTICO EN EL PISO 15
         if (pisoTorreActual < LIDERES_TORRE.length) {
             pisoTorreActual++;
-            document.getElementById('piso-actual-num').innerText = pisoTorreActual;
         } else {
-            alert("👑 ¡Increíble! Has completado la cima de la Torre de Batalla.");
+            pisoTorreActual = 1;
+            alert("👑 ¡INCREÍBLE! Has vencido la cima de la Torre de Batalla. ¡La torre se ha reinventado y se reinicia desde el Piso 1!");
         }
+
+        document.getElementById('piso-actual-num').innerText = pisoTorreActual;
         document.getElementById('btn-enfrentar-piso').disabled = false;
         actualizarUI();
         return;
@@ -1299,17 +1327,14 @@ function ejecutarAtaqueTorre() {
         document.getElementById('hp-jugador-torre').style.width = `${pctJugador}%`;
         document.getElementById('text-hp-jugador-torre').innerText = `${hpJugadorTorreActual} / ${hpJugadorTorreMax} HP`;
         
-        animarImpacto('box-jugador-torre', Math.round(danioLider), true);
+        animarAtaqueYDanio('box-lider-torre', 'box-jugador-torre', Math.round(danioLider), true, false);
         reproducirSonido('golpe');
 
         if (hpJugadorTorreActual <= 0) {
-            // PERMA-DEATH EN TORRE
             const indexDead = inventario.findIndex(p => p.instanciaId === pokemonLuchadorTorre.instanciaId);
-            if (indexDead !== -1) {
-                inventario.splice(indexDead, 1);
-            }
+            if (indexDead !== -1) { inventario.splice(indexDead, 1); }
 
-            mostrarResumenTorre(`☠️ ¡DESASTRE! Tu Pokémon fue eliminado por el Líder del Piso ${pisoTorreActual} y ha desaparecido de tu colección.`, 'perdido');
+            mostrarResumenTorre(`☠️ ¡DESASTRE! Tu Pokémon fue eliminado por el Líder del Piso ${pisoTorreActual} y ha desaparecido para siempre.`, 'perdido');
             document.getElementById('display-jugador-torre').innerHTML = `<p>Selecciona a la izquierda</p>`;
             document.getElementById('controles-torre').classList.add('hidden');
             document.getElementById('btn-enfrentar-piso').disabled = false;

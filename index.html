@@ -67,23 +67,34 @@
             80% { transform: translate(5px, -3px); }
         }
 
-        .flash-effect {
-            position: relative;
+        .attack-lunge-right {
+            animation: lungeRight 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .flash-effect::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: inherit;
-            pointer-events: none;
-            animation: flashAnim 0.3s ease-out forwards;
+        .attack-lunge-left {
+            animation: lungeLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        @keyframes flashAnim {
-            from { opacity: 1; }
-            to { opacity: 0; }
+        @keyframes lungeRight {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(45px) scale(1.1); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes lungeLeft {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-45px) scale(1.1); }
+            100% { transform: translateX(0); }
+        }
+
+        .damage-blink img {
+            animation: blinkRed 0.4s ease-in-out;
+        }
+
+        @keyframes blinkRed {
+            0%, 100% { filter: none; }
+            25%, 75% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); }
+            50% { opacity: 0.3; }
         }
 
         .badge-permadeath {
@@ -102,6 +113,18 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
+
+        .btn-crear-perfil {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -114,7 +137,11 @@
         <header>
             <div class="logo">🔴 PokeGacha UI</div>
             <div class="header-right">
-                <div class="user-badge">👤 <span id="nombre-usuario-display">Entrenador</span> <span id="id-usuario-display" class="id-badge">#12345</span></div>
+                <div class="user-badge">
+                    👤 <span id="nombre-usuario-display">Entrenador</span> 
+                    <span id="id-usuario-display" class="id-badge">#12345</span>
+                    <button class="btn-crear-perfil" onclick="crearNuevoPerfilDemo()" title="Crear un 2º perfil de prueba en este mismo navegador para probar amigos">➕ Nuevo Perfil</button>
+                </div>
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
@@ -216,14 +243,12 @@
                 <p class="desc-pokedex">Completa tareas diarias y desbloquea logros de carrera para ganar Pokedólares adicionales.</p>
 
                 <div class="casino-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-                    <!-- MISIONES DIARIAS -->
                     <div class="casino-card" style="text-align: left;">
                         <h3>📅 Misiones Diarias</h3>
                         <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Completa estos retos hoy para obtener recompensas.</p>
                         <div id="lista-misiones-diarias" class="lista-misiones-box"></div>
                     </div>
 
-                    <!-- LOGROS DE CARRERA -->
                     <div class="casino-card" style="text-align: left;">
                         <h3>🏆 Logros de Carrera</h3>
                         <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Grandes objetivos a largo plazo para entrenadores expertos.</p>
@@ -294,7 +319,7 @@
             <section class="pokedex-container-full">
                 <h2>🏰 Torre de Batalla Pokémon</h2>
                 <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere en la Torre lo PERDERÁS para siempre</span>
-                <p class="desc-pokedex">Asciende por los pisos de la torre. Cada victoria otorga recompensas mayores.</p>
+                <p class="desc-pokedex">Asciende por los 15 pisos. ¡Al completar el piso 15 el desafío se reinventa desde el Piso 1!</p>
                 
                 <div class="torre-container">
                     <div class="torre-info-card">
@@ -335,7 +360,6 @@
                 <p class="desc-pokedex">Prueba tu suerte en nuestros dos minijuegos oficiales para ganar bolsas de Pokedólares.</p>
                 
                 <div class="casino-grid">
-                    <!-- RULETA -->
                     <div class="casino-card">
                         <h3>☸️ Ruleta de la Suerte</h3>
                         <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Gira la ruleta y recibe multiplicadores en efectivo.</p>
@@ -343,7 +367,6 @@
                         <button class="btn-primary" style="margin-top: 15px;" onclick="girarRuleta()">Girar Ruleta (200 💰)</button>
                     </div>
 
-                    <!-- TRAGAPERRAS -->
                     <div class="casino-card">
                         <h3>🎰 Máquina Tragaperras</h3>
                         <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Consigue 3 símbolos iguales para llevarte el gran bote.</p>
@@ -368,7 +391,7 @@
                     <h2>Añadir Amigo 👥</h2>
                     <p class="desc-intercambio">Introduce el ID de 5 números de tu amigo.</p>
                     <div class="input-amigo-box">
-                        <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5" pattern="[0-9]*">
+                        <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5">
                         <button class="btn-primary" onclick="agregarAmigo()">Añadir</button>
                     </div>
 
