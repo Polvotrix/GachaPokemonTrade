@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Gacha Master - Gen 1 & Gen 2</title>
+    <title>Pokémon Gacha Master - Gen 1, Gen 2 & Gen 3</title>
 
     <!-- FAVICON -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M2,50 A48,48 0 0,0 98,50 Z' fill='white'/><line x1='2' y1='50' x2='98' y2='50' stroke='%23111' stroke-width='8'/><circle cx='50' cy='50' r='14' fill='white' stroke='%23111' stroke-width='8'/></svg>">
 
-    <!-- METADATOS SOCIALES -->
-    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1 & 2)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, intercambia con amigos y completa la Pokédex!">
+    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1, 2 & 3)">
+    <meta property="og:description" content="¡Abre Pokéballs, combate por turnos, intercambia con amigos y completa la Pokédex de Hoenn!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -18,44 +17,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- MODAL DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
-    <div id="modal-auth" class="modal-overlay">
-        <div class="modal-content modal-auth-content">
-            <h2 id="auth-title">🎮 Pokémon Gacha Master</h2>
-            <p id="auth-desc">Inicia sesión o regístrate para guardar tu progreso.</p>
-            
-            <form id="form-auth" onsubmit="event.preventDefault(); procesarAuth();">
-                <input type="text" id="auth-user" placeholder="Nombre de usuario" required autocomplete="username" maxlength="15">
-                <input type="password" id="auth-pass" placeholder="Contraseña" required autocomplete="current-password">
-                
-                <button type="submit" id="btn-submit-auth" class="btn-primary">Iniciar Sesión</button>
-            </form>
-
-            <div class="auth-toggle">
-                <span id="auth-toggle-text">¿No tienes cuenta?</span>
-                <button type="button" class="btn-link" onclick="alternarModoAuth()">Crear una cuenta</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
-    <div id="app-container" class="app-container hidden">
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div id="app-container" class="app-container">
         <!-- HEADER -->
         <header>
             <div class="logo">🔴 PokeGacha UI</div>
             <div class="header-right">
-                <div class="user-badge">👤 <span id="nombre-usuario-display">Entrenador</span></div>
+                <div class="user-badge">👤 <span id="nombre-usuario-display">Entrenador</span> <span id="id-usuario-display" class="id-badge">#12345</span></div>
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
                 <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
                 <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
-                <button class="btn-tab" onclick="cambiarPestana('misiones')">📜 Misiones</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
-                <button class="btn-tab" onclick="cambiarPestana('logros')">🏆 Logros</button>
-                <button class="btn-tab" onclick="cambiarPestana('stats')">📊 Estadísticas</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
-                <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">🚪 Salir</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
             </div>
         </header>
@@ -71,6 +46,7 @@
                         <button class="btn-maquina active" onclick="cambiarMaquina('normal', 100, this)">🔴 Normal (100)</button>
                         <button class="btn-maquina" onclick="cambiarMaquina('super', 300, this)">🔵 Super (300)</button>
                         <button class="btn-maquina" onclick="cambiarMaquina('ultra', 800, this)">⚫ Ultra (800)</button>
+                        <button class="btn-maquina btn-master" onclick="cambiarMaquina('master', 1500, this)">🟣 Master (1.500)</button>
                     </div>
 
                     <div class="gacha-machine-container" id="contenedor-maquina">
@@ -145,8 +121,9 @@
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Tus Luchadores ⚔️</h2>
-                    <p class="desc-intercambio">Elige un Pokémon de tu colección para enviarlo a la arena.</p>
-                    <div id="grid-seleccion-batalla" class="grid-inventario" style="max-height: 480px; width: 100%;"></div>
+                    <p class="desc-intercambio">Busca y elige un Pokémon para luchar.</p>
+                    <input type="text" id="input-buscar-luchador" class="input-busqueda-luchador" placeholder="🔍 Buscar por nombre..." oninput="renderizarSeleccionBatalla()">
+                    <div id="grid-seleccion-batalla" class="grid-inventario" style="max-height: 420px; width: 100%;"></div>
                 </section>
             </div>
 
@@ -179,8 +156,9 @@
                     <button id="btn-iniciar-batalla" class="btn-secondary" onclick="buscarRival()" disabled>🔍 Buscar Rival</button>
                 </div>
 
-                <div id="log-batalla" class="log-batalla">
-                    <p class="log-line">¡Selecciona un Pokémon de la lista a la izquierda para comenzar!</p>
+                <!-- RESUMEN SIMPLIFICADO DE RECOMPENSA DE COMBATE -->
+                <div id="resumen-ganancia-combate" class="resumen-combate-box">
+                    <span id="texto-resumen-combate">💰 ¡Inicia un combate y vence al rival para conseguir Pokedólares!</span>
                 </div>
             </section>
         </main>
@@ -190,8 +168,9 @@
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Añadir Amigo 👥</h2>
+                    <p class="desc-intercambio">Introduce el ID de 5 números de tu amigo.</p>
                     <div class="input-amigo-box">
-                        <input type="text" id="input-nuevo-amigo" placeholder="Usuario de amigo..." maxlength="15">
+                        <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5" pattern="[0-9]*">
                         <button class="btn-primary" onclick="agregarAmigo()">Añadir</button>
                     </div>
 
@@ -202,78 +181,25 @@
 
             <section class="pokedex-container-full">
                 <h2>Centro de Intercambio Pokémon 🔁</h2>
-                <p class="desc-pokedex">Selecciona un amigo de la izquierda y envíale un Pokémon de tu colección.</p>
+                <p class="desc-pokedex">Selecciona un amigo de la izquierda para enviarle un Pokémon de tu colección.</p>
                 
                 <div id="zona-intercambio-amigo" class="hidden">
                     <h3 style="margin-bottom: 10px; color: #38bdf8;">Intercambiando con: <span id="nombre-amigo-intercambio">-</span></h3>
-                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar 🎁" sobre un Pokémon de tu colección para regalárselo o intercambiarlo.</p>
+                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar 🎁" sobre un Pokémon para regalárselo.</p>
                     <div id="grid-inventario-intercambio" class="grid-inventario"></div>
                 </div>
                 <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">
-                    👈 Haz clic en "Intercambiar 🔄" en alguno de tus amigos de la lista de la izquierda para comenzar.
+                    👈 Haz clic en "Intercambiar 🔄" en alguno de tus amigos de la lista para comenzar.
                 </div>
-            </section>
-        </main>
-
-        <!-- VISTA DE MISIONES DIARIAS -->
-        <main id="vista-misiones" class="hidden">
-            <section class="pokedex-container-full">
-                <h2>Misiones Diarias 📜</h2>
-                <p class="desc-pokedex">Se reinician automáticamente cada 24 horas. ¡Complétalas para ganar dinero!</p>
-                <div id="grid-misiones" class="grid-logros"></div>
             </section>
         </main>
 
         <!-- VISTA DE POKÉDEX -->
-        <main id="vista-pokedex" class="hidden">
+        <main id="vista-pokedex" class="hidden vista-fullwidth">
             <section class="pokedex-container-full">
-                <h2>Pokédex Nacional (Kanto & Johto)</h2>
-                <p class="desc-pokedex">Consigue los 251 Pokémon de las dos primeras generaciones para completar la Pokédex.</p>
+                <h2>Pokédex Nacional (Kanto, Johto & Hoenn)</h2>
+                <p class="desc-pokedex">Consigue los 386 Pokémon de las tres primeras generaciones para completar la Pokédex.</p>
                 <div id="grid-pokedex" class="grid-pokedex"></div>
-            </section>
-        </main>
-
-        <!-- VISTA DE LOGROS -->
-        <main id="vista-logros" class="hidden">
-            <section class="pokedex-container-full">
-                <h2>Logros de Entrenador 🏆</h2>
-                <p class="desc-pokedex">Completa objetivos para ganar Pokedólares de recompensa.</p>
-                <div id="grid-logros" class="grid-logros"></div>
-            </section>
-        </main>
-
-        <!-- VISTA DE ESTADÍSTICAS -->
-        <main id="vista-stats" class="hidden">
-            <section class="pokedex-container-full">
-                <h2>Panel de Estadísticas 📊</h2>
-                <p class="desc-pokedex">Resumen general de tu rendimiento y riqueza como entrenador.</p>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Pokéballs Abiertas</h3>
-                        <p id="stat-tiradas">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pokémon Shiny Atrapados</h3>
-                        <p id="stat-shinies">0 ✨</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Batallas Ganadas</h3>
-                        <p id="stat-victorias">0 ⚔️</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pokedólares Gastados</h3>
-                        <p id="stat-gastados">0 💰</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pokedólares Ganados</h3>
-                        <p id="stat-ganados">0 💰</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Completitud Pokédex</h3>
-                        <p id="stat-porcentaje">0%</p>
-                    </div>
-                </div>
             </section>
         </main>
     </div>
