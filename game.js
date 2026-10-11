@@ -32,6 +32,12 @@ let pokemonRival = null;
 let hpJugadorActual = 0, hpJugadorMax = 0;
 let hpRivalActual = 0, hpRivalMax = 0;
 
+// VARIABLES DE TORRE Y MINIJUEGO
+let pisoTorreActual = 1;
+let liderTorreActual = null;
+let hpLiderTorreActual = 0, hpLiderTorreMax = 0;
+let hpJugadorTorreActual = 0, hpJugadorTorreMax = 0;
+
 const CODIGOS_VALIDOS = {
     "071011": { recompensa: 20000, tipo: "monedas", descripcion: "20.000 Pokedólares" }
 };
@@ -88,6 +94,19 @@ const TABLA_TIPOS = {
     fairy: { fighting: 1.6, dragon: 1.6, dark: 1.6, fire: 0.6, poison: 0.6, steel: 0.6 },
     normal: { rock: 0.6, steel: 0.6, ghost: 0 }
 };
+
+const LIDERES_TORRE = [
+    { piso: 1, nombre: "Entrenador Novato", idPoke: 25, recompensa: 400 },
+    { piso: 2, nombre: "Líder Brock", idPoke: 74, recompensa: 700 },
+    { piso: 3, nombre: "Líder Misty", idPoke: 121, recompensa: 1000 },
+    { piso: 4, nombre: "Líder Lt. Surge", idPoke: 26, recompensa: 1500 },
+    { piso: 5, nombre: "Líder Erika", idPoke: 45, recompensa: 2200 },
+    { piso: 6, nombre: "Líder Sabrina", idPoke: 65, recompensa: 3000 },
+    { piso: 7, nombre: "Líder Blaine", idPoke: 126, recompensa: 4000 },
+    { piso: 8, nombre: "Alto Mando Lorelei", idPoke: 131, recompensa: 5500 },
+    { piso: 9, nombre: "Campeón Rival", idPoke: 149, recompensa: 7500 },
+    { piso: 10, nombre: "Dios Legendario Arceus", idPoke: 386, recompensa: 15000 }
+];
 
 let audioSilenciado = false;
 let musicaIniciada = false;
@@ -150,6 +169,41 @@ function cargarPartida() {
             monedas = 500; inventario = []; pokedexDescubiertos = []; logrosReclamados = []; misionesReclamadas = [];
             stats = { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 };
         }
+    }
+}
+
+// NAVEGACIÓN INDEPENDIENTE DE PESTAÑAS
+function cambiarPestana(pestana) {
+    reproducirSonido('normal');
+    
+    // Desactivar todos los botones de la barra superior
+    document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+    
+    // Ocultar todas las secciones <main>
+    document.querySelectorAll('main.vista-seccion').forEach(m => m.classList.add('hidden'));
+
+    // Mostrar únicamente la pestaña seleccionada
+    if (pestana === 'juego') {
+        document.querySelector('button[onclick="cambiarPestana(\'juego\')"]').classList.add('active');
+        document.getElementById('vista-juego').classList.remove('hidden');
+    } else if (pestana === 'batalla') {
+        document.querySelector('button[onclick="cambiarPestana(\'batalla\')"]').classList.add('active');
+        document.getElementById('vista-batalla').classList.remove('hidden');
+        renderizarSeleccionBatalla();
+    } else if (pestana === 'torre') {
+        document.querySelector('button[onclick="cambiarPestana(\'torre\')"]').classList.add('active');
+        document.getElementById('vista-torre').classList.remove('hidden');
+    } else if (pestana === 'minijuego') {
+        document.querySelector('button[onclick="cambiarPestana(\'minijuego\')"]').classList.add('active');
+        document.getElementById('vista-minijuego').classList.remove('hidden');
+    } else if (pestana === 'amigos') {
+        document.querySelector('button[onclick="cambiarPestana(\'amigos\')"]').classList.add('active');
+        document.getElementById('vista-amigos').classList.remove('hidden');
+        renderizarAmigos();
+    } else if (pestana === 'pokedex') {
+        document.querySelector('button[onclick="cambiarPestana(\'pokedex\')"]').classList.add('active');
+        document.getElementById('vista-pokedex').classList.remove('hidden');
+        renderizarPokedexCompleta();
     }
 }
 
@@ -575,32 +629,6 @@ function renderizarSeleccionBatalla() {
     });
 }
 
-function cambiarPestana(pestana) {
-    reproducirSonido('normal');
-    document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('vista-juego').classList.add('hidden');
-    document.getElementById('vista-batalla').classList.add('hidden');
-    document.getElementById('vista-amigos').classList.add('hidden');
-    document.getElementById('vista-pokedex').classList.add('hidden');
-
-    if (pestana === 'juego') {
-        document.querySelector('button[onclick="cambiarPestana(\'juego\')"]').classList.add('active');
-        document.getElementById('vista-juego').classList.remove('hidden');
-    } else if (pestana === 'batalla') {
-        document.querySelector('button[onclick="cambiarPestana(\'batalla\')"]').classList.add('active');
-        document.getElementById('vista-batalla').classList.remove('hidden');
-        renderizarSeleccionBatalla();
-    } else if (pestana === 'amigos') {
-        document.querySelector('button[onclick="cambiarPestana(\'amigos\')"]').classList.add('active');
-        document.getElementById('vista-amigos').classList.remove('hidden');
-        renderizarAmigos();
-    } else if (pestana === 'pokedex') {
-        document.querySelector('button[onclick="cambiarPestana(\'pokedex\')"]').classList.add('active');
-        document.getElementById('vista-pokedex').classList.remove('hidden');
-        renderizarPokedexCompleta();
-    }
-}
-
 function cambiarMaquina(tipo, costo, elementoBtn) {
     reproducirSonido('normal');
     maquinaActual = tipo; costoActual = costo;
@@ -927,6 +955,132 @@ function renderizarPokedexCompleta() {
         card.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="Pokédex"><strong>#${id}</strong><small>${descubierto ? 'Descubierto' : '???'}</small>`;
         grid.appendChild(card);
     });
+}
+
+// TORRE DE BATALLA
+async function iniciarPisoTorre() {
+    if (!pokemonLuchador) { alert("❌ Primero debes seleccionar un Pokémon en la pestaña de Combate."); return; }
+    reproducirSonido('normal');
+
+    const datosPiso = LIDERES_TORRE.find(l => l.piso === pisoTorreActual) || LIDERES_TORRE[LIDERES_TORRE.length - 1];
+
+    try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${datosPiso.idPoke}`);
+        const datos = await res.json();
+
+        liderTorreActual = {
+            nombre: datosPiso.nombre,
+            pokemonNombre: datos.name,
+            sprite: datos.sprites.front_default,
+            nivel: pisoTorreActual * 5,
+            tipo: datos.types[0].type.name,
+            recompensa: datosPiso.recompensa
+        };
+
+        hpLiderTorreMax = Math.round(150 + (pisoTorreActual * 50));
+        hpLiderTorreActual = hpLiderTorreMax;
+
+        const multiplicadorRareza = { 'Comun': 1, 'Raro': 1.5, 'Epico': 2.2, 'Legendario': 3.5 };
+        const baseMult = multiplicadorRareza[pokemonLuchador.rareza] || 1;
+        hpJugadorTorreMax = Math.round(100 * baseMult + (pokemonLuchador.nivel * 20));
+        hpJugadorTorreActual = hpJugadorTorreMax;
+
+        document.getElementById('nombre-lider-torre').innerText = `${liderTorreActual.nombre} (${liderTorreActual.pokemonNombre})`;
+        document.getElementById('display-lider-torre').innerHTML = `<img src="${liderTorreActual.sprite}" alt="Líder">`;
+        document.getElementById('text-hp-lider-torre').innerText = `${hpLiderTorreActual} / ${hpLiderTorreMax} HP`;
+        document.getElementById('hp-lider-torre').style.width = '100%';
+
+        document.getElementById('display-jugador-torre').innerHTML = `<img src="${pokemonLuchador.sprite}" alt="Tu Pokémon">`;
+        document.getElementById('text-hp-jugador-torre').innerText = `${hpJugadorTorreActual} / ${hpJugadorTorreMax} HP`;
+        document.getElementById('hp-jugador-torre').style.width = '100%';
+
+        document.getElementById('arena-torre').classList.remove('hidden');
+        document.getElementById('controles-torre').classList.remove('hidden');
+        document.getElementById('btn-enfrentar-piso').disabled = true;
+
+        mostrarResumenTorre(`🏰 ¡Comienza el combate en el Piso ${pisoTorreActual} contra ${liderTorreActual.nombre}!`, '');
+    } catch (e) { console.error(e); }
+}
+
+function ejecutarAtaqueTorre() {
+    if (!pokemonLuchador || !liderTorreActual || hpJugadorTorreActual <= 0 || hpLiderTorreActual <= 0) return;
+
+    let danioBase = 20 + (pokemonLuchador.nivel * 6) + Math.random() * 10;
+    hpLiderTorreActual = Math.max(0, hpLiderTorreActual - Math.round(danioBase));
+    const pctLider = Math.round((hpLiderTorreActual / hpLiderTorreMax) * 100);
+    document.getElementById('hp-lider-torre').style.width = `${pctLider}%`;
+    document.getElementById('text-hp-lider-torre').innerText = `${hpLiderTorreActual} / ${hpLiderTorreMax} HP`;
+    reproducirSonido('golpe');
+
+    if (hpLiderTorreActual <= 0) {
+        monedas += liderTorreActual.recompensa;
+        stats.ganadosTotales += liderTorreActual.recompensa;
+        reproducirSonido('legendario');
+        mostrarResumenTorre(`🏆 ¡PISO ${pisoTorreActual} SUPERADO! Ganaste +${liderTorreActual.recompensa} Pokedólares 💰`, 'ganado');
+        
+        document.getElementById('controles-torre').classList.add('hidden');
+        if (pisoTorreActual < LIDERES_TORRE.length) {
+            pisoTorreActual++;
+            document.getElementById('piso-actual-num').innerText = pisoTorreActual;
+        } else {
+            alert("👑 ¡Increíble! Has completado la cima de la Torre de Batalla.");
+        }
+        document.getElementById('btn-enfrentar-piso').disabled = false;
+        actualizarUI();
+        return;
+    }
+
+    setTimeout(() => {
+        let danioLider = 15 + (pisoTorreActual * 6) + Math.random() * 8;
+        hpJugadorTorreActual = Math.max(0, hpJugadorTorreActual - Math.round(danioLider));
+        const pctJugador = Math.round((hpJugadorTorreActual / hpJugadorTorreMax) * 100);
+        document.getElementById('hp-jugador-torre').style.width = `${pctJugador}%`;
+        document.getElementById('text-hp-jugador-torre').innerText = `${hpJugadorTorreActual} / ${hpJugadorTorreMax} HP`;
+        reproducirSonido('golpe');
+
+        if (hpJugadorTorreActual <= 0) {
+            mostrarResumenTorre(`☠️ Tu Pokémon cayó derrotado en el Piso ${pisoTorreActual}. ¡Inténtalo de nuevo!`, 'perdido');
+            document.getElementById('controles-torre').classList.add('hidden');
+            document.getElementById('btn-enfrentar-piso').disabled = false;
+        }
+    }, 600);
+}
+
+function mostrarResumenTorre(texto, clase) {
+    const box = document.getElementById('resumen-torre');
+    box.className = `resumen-combate-box ${clase}`;
+    document.getElementById('texto-resumen-torre').innerHTML = texto;
+}
+
+// MINIJUEGO RULETA
+function girarRuleta() {
+    const costoApuesta = 200;
+    if (monedas < costoApuesta) { alert("❌ No tienes suficientes Pokedólares para girar la ruleta (Costo: 200 💰)."); return; }
+
+    monedas -= costoApuesta;
+    stats.gastadosTotales += costoApuesta;
+    reproducirSonido('tirar');
+
+    const pantallaRuleta = document.getElementById('ruleta-display');
+    pantallaRuleta.innerText = "🎰 Girando...";
+
+    setTimeout(() => {
+        const premioRol = Math.random() * 100;
+        let premio = 0;
+        let textoPremio = "";
+
+        if (premioRol < 5) { premio = 2000; textoPremio = "🌟 ¡JACKPOT! +2.000 Pokedólares!"; }
+        else if (premioRol < 20) { premio = 600; textoPremio = "🎉 ¡Gran Premio! +600 Pokedólares!"; }
+        else if (premioRol < 55) { premio = 250; textoPremio = "✨ ¡Premio Menor! +250 Pokedólares!"; }
+        else { premio = 0; textoPremio = "😢 ¡Mala suerte! Sin premio."; }
+
+        monedas += premio;
+        if (premio > 0) stats.ganadosTotales += premio;
+
+        pantallaRuleta.innerText = textoPremio;
+        reproducirSonido(premio >= 600 ? 'legendario' : 'normal');
+        actualizarUI();
+    }, 1200);
 }
 
 inicializarJugadorDirecto();

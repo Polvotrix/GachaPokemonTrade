@@ -28,6 +28,8 @@
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
                 <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
+                <button class="btn-tab" onclick="cambiarPestana('torre')">🏰 Torre</button>
+                <button class="btn-tab" onclick="cambiarPestana('minijuego')">🎰 Ruleta</button>
                 <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
@@ -35,8 +37,8 @@
             </div>
         </header>
 
-        <!-- VISTA DE JUEGO PRINCIPAL -->
-        <main id="vista-juego">
+        <!-- 1. VISTA DE JUEGO PRINCIPAL -->
+        <main id="vista-juego" class="vista-seccion">
             <div class="sidebar-container">
                 <!-- MÁQUINA GACHA -->
                 <section class="gacha-section">
@@ -93,7 +95,6 @@
                     </div>
                 </div>
 
-                <!-- FILTROS Y ORDENAMIENTO -->
                 <div class="filtros-container">
                     <select id="filtro-rareza" onchange="aplicarFiltrosInventario()">
                         <option value="todas">Todas las Rarezas</option>
@@ -116,8 +117,8 @@
             </section>
         </main>
 
-        <!-- VISTA DE BATALLA / COMBATE -->
-        <main id="vista-batalla" class="hidden">
+        <!-- 2. VISTA DE COMBATE -->
+        <main id="vista-batalla" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Tus Luchadores ⚔️</h2>
@@ -156,15 +157,67 @@
                     <button id="btn-iniciar-batalla" class="btn-secondary" onclick="buscarRival()" disabled>🔍 Buscar Rival</button>
                 </div>
 
-                <!-- RESUMEN SIMPLIFICADO DE RECOMPENSA DE COMBATE -->
                 <div id="resumen-ganancia-combate" class="resumen-combate-box">
                     <span id="texto-resumen-combate">💰 ¡Inicia un combate y vence al rival para conseguir Pokedólares!</span>
                 </div>
             </section>
         </main>
 
-        <!-- VISTA DE AMIGOS E INTERCAMBIOS -->
-        <main id="vista-amigos" class="hidden">
+        <!-- 3. VISTA DE TORRE DE BATALLA -->
+        <main id="vista-torre" class="vista-seccion vista-unica hidden">
+            <section class="pokedex-container-full">
+                <h2>🏰 Torre de Batalla Pokémon</h2>
+                <p class="desc-pokedex">Asciende por los pisos de la torre. Cada victoria otorga recompensas cada vez mayores y trofeos.</p>
+                
+                <div class="torre-container">
+                    <div class="torre-info-card">
+                        <h3>Piso Actual: <span id="piso-actual-num">1</span> / 10</h3>
+                        <p id="descripcion-piso">Reto 1: Entrenador Novato de Gimnasio</p>
+                        <button id="btn-enfrentar-piso" class="btn-primary" onclick="iniciarPisoTorre()">⚔️ Desafiar Piso</button>
+                    </div>
+
+                    <div id="arena-torre" class="battle-arena hidden" style="margin-top: 20px;">
+                        <div class="fighter-box" id="box-lider-torre">
+                            <h3 id="nombre-lider-torre">Líder de Piso</h3>
+                            <div id="display-lider-torre" class="fighter-display"><p>-</p></div>
+                            <div class="hp-bar-bg"><div id="hp-lider-torre" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-lider-torre">0 / 0 HP</span>
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div class="fighter-box" id="box-jugador-torre">
+                            <h3>Tu Pokémon</h3>
+                            <div id="display-jugador-torre" class="fighter-display"><p>Selecciona tu Pokémon</p></div>
+                            <div class="hp-bar-bg"><div id="hp-jugador-torre" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-jugador-torre">0 / 0 HP</span>
+                        </div>
+                    </div>
+                    <div id="controles-torre" class="battle-controls hidden" style="margin-top: 15px;">
+                        <button id="btn-atacar-torre" class="btn-primary" onclick="ejecutarAtaqueTorre()">⚡ Atacar al Líder</button>
+                    </div>
+                    <div id="resumen-torre" class="resumen-combate-box" style="margin-top: 15px;">
+                        <span id="texto-resumen-torre">🏰 ¡Selecciona un Pokémon en Combate y sube a la cima de la Torre!</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 4. VISTA DE RULETA / MINIJUEGO -->
+        <main id="vista-minijuego" class="vista-seccion vista-unica hidden">
+            <section class="pokedex-container-full" style="text-align: center;">
+                <h2>🎰 Ruleta de la Suerte Pokémon</h2>
+                <p class="desc-pokedex">Apuesta 200 Pokedólares y gira la ruleta para conseguir grandes premios en efectivo.</p>
+                
+                <div class="ruleta-box">
+                    <div id="ruleta-display" class="ruleta-screen">🎁 ¿Listo para girar?</div>
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary" style="max-width: 250px;" onclick="girarRuleta()">Girar Ruleta (200 💰)</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 5. VISTA DE AMIGOS E INTERCAMBIOS -->
+        <main id="vista-amigos" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Añadir Amigo 👥</h2>
@@ -194,8 +247,8 @@
             </section>
         </main>
 
-        <!-- VISTA DE POKÉDEX -->
-        <main id="vista-pokedex" class="hidden vista-fullwidth">
+        <!-- 6. VISTA DE POKÉDEX -->
+        <main id="vista-pokedex" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full">
                 <h2>Pokédex Nacional (Kanto, Johto & Hoenn)</h2>
                 <p class="desc-pokedex">Consigue los 386 Pokémon de las tres primeras generaciones para completar la Pokédex.</p>
