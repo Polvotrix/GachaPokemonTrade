@@ -1,8 +1,10 @@
-// SISTEMA DE USUARIO AUTOMÁTICO Y MULTI-PERFIL
+// SISTEMA DE USUARIO ONLINE PEERJS
 let usuarioActual = "Entrenador";
 let idUsuarioActual = localStorage.getItem('pokeGachaIdUsuario') || null;
-let amigosLista = [];
-let amigoSeleccionadoIntercambio = null;
+
+// RED Y CONEXIÓN EN TIEMPO REAL PEERJS
+let peer = null;
+let conexionPeerActiva = null;
 
 // VARIABLES DE JUEGO
 let monedas = 500;
@@ -59,7 +61,7 @@ const POOL_LEGENDARIOS = [
     494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649
 ];
 
-// ÉPICOS GEN 1 A 5
+// ÉPICOS (TERCERA FASE O EVOLUCIONADOS FINALES)
 const POOL_EPICOS = [
     3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 103, 115, 130, 131, 134, 135, 136, 139, 141, 142, 143, 149,
     154, 157, 160, 169, 178, 181, 182, 186, 196, 197, 199, 208, 212, 214, 217, 227, 229, 230, 232, 242, 248,
@@ -68,7 +70,7 @@ const POOL_EPICOS = [
     497, 500, 503, 521, 526, 530, 534, 537, 542, 545, 547, 553, 555, 560, 563, 565, 567, 571, 576, 579, 584, 589, 604, 609, 612, 614, 621, 623, 625, 628, 630, 635, 637
 ];
 
-// RAROS GEN 1 A 5
+// RAROS (SEGUNDA FASE)
 const POOL_RAROS = [
     2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140,
     153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241,
@@ -79,13 +81,13 @@ const POOL_RAROS = [
 
 const POOL_COMUNES = POKEDEX_TOTAL.filter(id => !POOL_LEGENDARIOS.includes(id) && !POOL_EPICOS.includes(id) && !POOL_RAROS.includes(id));
 
-// MAPA DE EVOLUCIONES HASTA GEN 5
+// REGLA NUEVA: FASE 1 EVOLUCIONA A NIVEL 15, FASE 2 EVOLUCIONA A NIVEL 35
 const MAPA_EVOLUCIONES = {
-    1: { nivel: 5, target: 2 }, 2: { nivel: 10, target: 3 }, 4: { nivel: 5, target: 5 }, 5: { nivel: 10, target: 6 }, 7: { nivel: 5, target: 8 }, 8: { nivel: 10, target: 9 }, 10: { nivel: 3, target: 11 }, 11: { nivel: 6, target: 12 }, 13: { nivel: 3, target: 14 }, 14: { nivel: 6, target: 15 }, 16: { nivel: 4, target: 17 }, 17: { nivel: 8, target: 18 }, 19: { nivel: 5, target: 20 }, 21: { nivel: 5, target: 22 }, 23: { nivel: 5, target: 24 }, 25: { nivel: 6, target: 26 }, 27: { nivel: 5, target: 28 }, 29: { nivel: 4, target: 30 }, 30: { nivel: 8, target: 31 }, 32: { nivel: 4, target: 33 }, 33: { nivel: 8, target: 34 }, 41: { nivel: 5, target: 42 }, 43: { nivel: 5, target: 44 }, 46: { nivel: 5, target: 47 }, 48: { nivel: 5, target: 49 }, 52: { nivel: 5, target: 53 }, 54: { nivel: 5, target: 55 }, 56: { nivel: 5, target: 57 }, 60: { nivel: 4, target: 61 }, 63: { nivel: 4, target: 64 }, 66: { nivel: 4, target: 67 }, 69: { nivel: 4, target: 70 }, 72: { nivel: 5, target: 73 }, 74: { nivel: 4, target: 75 }, 77: { nivel: 6, target: 78 }, 79: { nivel: 6, target: 80 }, 81: { nivel: 5, target: 82 }, 84: { nivel: 5, target: 85 }, 86: { nivel: 5, target: 87 }, 88: { nivel: 5, target: 89 }, 90: { nivel: 5, target: 91 }, 92: { nivel: 4, target: 93 }, 96: { nivel: 5, target: 97 }, 98: { nivel: 5, target: 99 }, 100: { nivel: 5, target: 101 }, 104: { nivel: 5, target: 105 }, 109: { nivel: 5, target: 110 }, 111: { nivel: 6, target: 112 }, 116: { nivel: 5, target: 117 }, 118: { nivel: 5, target: 119 }, 120: { nivel: 5, target: 121 }, 129: { nivel: 5, target: 130 }, 133: { nivel: 6, target: 134 }, 138: { nivel: 6, target: 139 }, 140: { nivel: 6, target: 141 }, 147: { nivel: 6, target: 148 }, 148: { nivel: 12, target: 149 },
-    152: { nivel: 5, target: 153 }, 153: { nivel: 10, target: 154 }, 155: { nivel: 5, target: 156 }, 156: { nivel: 10, target: 157 }, 158: { nivel: 5, target: 159 }, 159: { nivel: 10, target: 160 }, 161: { nivel: 4, target: 162 }, 163: { nivel: 4, target: 164 }, 165: { nivel: 4, target: 166 }, 167: { nivel: 4, target: 168 }, 170: { nivel: 5, target: 171 }, 172: { nivel: 3, target: 25 }, 175: { nivel: 4, target: 176 }, 177: { nivel: 5, target: 178 }, 179: { nivel: 4, target: 180 }, 180: { nivel: 8, target: 181 }, 183: { nivel: 4, target: 184 }, 187: { nivel: 4, target: 188 }, 188: { nivel: 8, target: 189 }, 194: { nivel: 4, target: 195 }, 216: { nivel: 6, target: 217 }, 218: { nivel: 5, target: 219 }, 220: { nivel: 5, target: 221 }, 223: { nivel: 5, target: 224 }, 228: { nivel: 5, target: 229 }, 231: { nivel: 5, target: 232 }, 246: { nivel: 6, target: 247 }, 247: { nivel: 12, target: 248 },
-    252: { nivel: 5, target: 253 }, 253: { nivel: 10, target: 254 }, 255: { nivel: 5, target: 256 }, 256: { nivel: 10, target: 257 }, 258: { nivel: 5, target: 259 }, 259: { nivel: 10, target: 260 }, 261: { nivel: 4, target: 262 }, 263: { nivel: 4, target: 264 }, 265: { nivel: 3, target: 266 }, 266: { nivel: 6, target: 267 }, 268: { nivel: 6, target: 269 }, 270: { nivel: 4, target: 271 }, 271: { nivel: 8, target: 272 }, 273: { nivel: 4, target: 274 }, 274: { nivel: 8, target: 275 }, 276: { nivel: 4, target: 277 }, 278: { nivel: 5, target: 279 }, 280: { nivel: 5, target: 281 }, 281: { nivel: 10, target: 282 }, 283: { nivel: 4, target: 284 }, 285: { nivel: 5, target: 286 }, 287: { nivel: 5, target: 288 }, 288: { nivel: 10, target: 289 }, 290: { nivel: 5, target: 291 }, 293: { nivel: 4, target: 294 }, 294: { nivel: 8, target: 295 }, 296: { nivel: 5, target: 297 }, 298: { nivel: 3, target: 183 }, 304: { nivel: 5, target: 305 }, 305: { nivel: 10, target: 306 }, 307: { nivel: 6, target: 308 }, 309: { nivel: 5, target: 310 }, 316: { nivel: 5, target: 317 }, 318: { nivel: 5, target: 319 }, 320: { nivel: 8, target: 321 }, 322: { nivel: 6, target: 323 }, 325: { nivel: 6, target: 326 }, 328: { nivel: 6, target: 329 }, 329: { nivel: 10, target: 330 }, 331: { nivel: 6, target: 332 }, 333: { nivel: 6, target: 334 }, 339: { nivel: 6, target: 340 }, 341: { nivel: 6, target: 342 }, 343: { nivel: 6, target: 344 }, 345: { nivel: 8, target: 346 }, 347: { nivel: 8, target: 348 }, 349: { nivel: 5, target: 350 }, 353: { nivel: 6, target: 354 }, 355: { nivel: 6, target: 356 }, 360: { nivel: 4, target: 202 }, 361: { nivel: 8, target: 362 }, 363: { nivel: 6, target: 364 }, 364: { nivel: 10, target: 365 }, 371: { nivel: 6, target: 372 }, 372: { nivel: 12, target: 373 }, 374: { nivel: 6, target: 375 }, 375: { nivel: 12, target: 376 },
-    387: { nivel: 5, target: 388 }, 388: { nivel: 10, target: 389 }, 390: { nivel: 5, target: 391 }, 391: { nivel: 10, target: 392 }, 393: { nivel: 5, target: 394 }, 394: { nivel: 10, target: 395 }, 396: { nivel: 4, target: 397 }, 397: { nivel: 8, target: 398 }, 399: { nivel: 4, target: 400 }, 401: { nivel: 3, target: 402 }, 403: { nivel: 4, target: 404 }, 404: { nivel: 8, target: 405 }, 406: { nivel: 5, target: 407 }, 408: { nivel: 6, target: 409 }, 410: { nivel: 6, target: 411 }, 412: { nivel: 4, target: 413 }, 415: { nivel: 5, target: 416 }, 417: { nivel: 5, target: 418 }, 420: { nivel: 6, target: 421 }, 422: { nivel: 5, target: 423 }, 425: { nivel: 6, target: 426 }, 427: { nivel: 6, target: 428 }, 431: { nivel: 6, target: 432 }, 434: { nivel: 6, target: 435 }, 436: { nivel: 6, target: 437 }, 443: { nivel: 6, target: 444 }, 444: { nivel: 12, target: 445 }, 447: { nivel: 6, target: 448 }, 449: { nivel: 6, target: 450 }, 451: { nivel: 6, target: 452 }, 453: { nivel: 6, target: 454 }, 456: { nivel: 5, target: 457 }, 458: { nivel: 5, target: 459 },
-    495: { nivel: 5, target: 496 }, 496: { nivel: 10, target: 497 }, 498: { nivel: 5, target: 499 }, 499: { nivel: 10, target: 500 }, 501: { nivel: 5, target: 502 }, 502: { nivel: 10, target: 503 }, 504: { nivel: 4, target: 505 }, 506: { nivel: 4, target: 507 }, 507: { nivel: 8, target: 508 }, 509: { nivel: 4, target: 510 }, 519: { nivel: 4, target: 520 }, 520: { nivel: 8, target: 521 }, 522: { nivel: 5, target: 523 }, 524: { nivel: 5, target: 525 }, 525: { nivel: 10, target: 526 }, 527: { nivel: 5, target: 528 }, 529: { nivel: 6, target: 530 }, 532: { nivel: 5, target: 533 }, 533: { nivel: 10, target: 534 }, 535: { nivel: 5, target: 536 }, 536: { nivel: 10, target: 537 }, 540: { nivel: 4, target: 541 }, 541: { nivel: 8, target: 542 }, 543: { nivel: 4, target: 544 }, 544: { nivel: 8, target: 545 }, 551: { nivel: 5, target: 552 }, 552: { nivel: 10, target: 553 }, 557: { nivel: 6, target: 558 }, 559: { nivel: 6, target: 560 }, 564: { nivel: 7, target: 565 }, 566: { nivel: 7, target: 567 }, 568: { nivel: 6, target: 569 }, 570: { nivel: 6, target: 571 }, 572: { nivel: 5, target: 573 }, 574: { nivel: 5, target: 575 }, 575: { nivel: 10, target: 576 }, 577: { nivel: 5, target: 578 }, 578: { nivel: 10, target: 579 }, 580: { nivel: 6, target: 581 }, 582: { nivel: 5, target: 583 }, 583: { nivel: 10, target: 584 }, 585: { nivel: 6, target: 586 }, 587: { nivel: 6, target: 588 }, 590: { nivel: 6, target: 591 }, 592: { nivel: 6, target: 593 }, 595: { nivel: 6, target: 596 }, 597: { nivel: 6, target: 598 }, 599: { nivel: 5, target: 600 }, 600: { nivel: 10, target: 601 }, 602: { nivel: 6, target: 603 }, 603: { nivel: 12, target: 604 }, 605: { nivel: 6, target: 606 }, 607: { nivel: 6, target: 608 }, 608: { nivel: 12, target: 609 }, 610: { nivel: 6, target: 611 }, 611: { nivel: 12, target: 612 }, 613: { nivel: 6, target: 614 }, 619: { nivel: 7, target: 620 }, 622: { nivel: 7, target: 623 }, 624: { nivel: 8, target: 625 }, 627: { nivel: 8, target: 628 }, 629: { nivel: 8, target: 630 }, 633: { nivel: 7, target: 634 }, 634: { nivel: 14, target: 635 }, 636: { nivel: 10, target: 637 }
+    1: { nivel: 15, target: 2 }, 2: { nivel: 35, target: 3 }, 4: { nivel: 15, target: 5 }, 5: { nivel: 35, target: 6 }, 7: { nivel: 15, target: 8 }, 8: { nivel: 35, target: 9 }, 10: { nivel: 15, target: 11 }, 11: { nivel: 35, target: 12 }, 13: { nivel: 15, target: 14 }, 14: { nivel: 35, target: 15 }, 16: { nivel: 15, target: 17 }, 17: { nivel: 35, target: 18 }, 19: { nivel: 15, target: 20 }, 21: { nivel: 15, target: 22 }, 23: { nivel: 15, target: 24 }, 25: { nivel: 15, target: 26 }, 27: { nivel: 15, target: 28 }, 29: { nivel: 15, target: 30 }, 30: { nivel: 35, target: 31 }, 32: { nivel: 15, target: 33 }, 33: { nivel: 35, target: 34 }, 41: { nivel: 15, target: 42 }, 43: { nivel: 15, target: 44 }, 46: { nivel: 15, target: 47 }, 48: { nivel: 15, target: 49 }, 52: { nivel: 15, target: 53 }, 54: { nivel: 15, target: 55 }, 56: { nivel: 15, target: 57 }, 60: { nivel: 15, target: 61 }, 63: { nivel: 15, target: 64 }, 66: { nivel: 15, target: 67 }, 69: { nivel: 15, target: 70 }, 72: { nivel: 15, target: 73 }, 74: { nivel: 15, target: 75 }, 77: { nivel: 15, target: 78 }, 79: { nivel: 15, target: 80 }, 81: { nivel: 15, target: 82 }, 84: { nivel: 15, target: 85 }, 86: { nivel: 15, target: 87 }, 88: { nivel: 15, target: 89 }, 90: { nivel: 15, target: 91 }, 92: { nivel: 15, target: 93 }, 96: { nivel: 15, target: 97 }, 98: { nivel: 15, target: 99 }, 100: { nivel: 15, target: 101 }, 104: { nivel: 15, target: 105 }, 109: { nivel: 15, target: 110 }, 111: { nivel: 15, target: 112 }, 116: { nivel: 15, target: 117 }, 118: { nivel: 15, target: 119 }, 120: { nivel: 15, target: 121 }, 129: { nivel: 15, target: 130 }, 133: { nivel: 15, target: 134 }, 138: { nivel: 15, target: 139 }, 140: { nivel: 15, target: 141 }, 147: { nivel: 15, target: 148 }, 148: { nivel: 35, target: 149 },
+    152: { nivel: 15, target: 153 }, 153: { nivel: 35, target: 154 }, 155: { nivel: 15, target: 156 }, 156: { nivel: 35, target: 157 }, 158: { nivel: 15, target: 159 }, 159: { nivel: 35, target: 160 }, 161: { nivel: 15, target: 162 }, 163: { nivel: 15, target: 164 }, 165: { nivel: 15, target: 166 }, 167: { nivel: 15, target: 168 }, 170: { nivel: 15, target: 171 }, 172: { nivel: 15, target: 25 }, 175: { nivel: 15, target: 176 }, 177: { nivel: 15, target: 178 }, 179: { nivel: 15, target: 180 }, 180: { nivel: 35, target: 181 }, 183: { nivel: 15, target: 184 }, 187: { nivel: 15, target: 188 }, 188: { nivel: 35, target: 189 }, 194: { nivel: 15, target: 195 }, 216: { nivel: 15, target: 217 }, 218: { nivel: 15, target: 219 }, 220: { nivel: 15, target: 221 }, 223: { nivel: 15, target: 224 }, 228: { nivel: 15, target: 229 }, 231: { nivel: 15, target: 232 }, 246: { nivel: 15, target: 247 }, 247: { nivel: 35, target: 248 },
+    252: { nivel: 15, target: 253 }, 253: { nivel: 35, target: 254 }, 255: { nivel: 15, target: 256 }, 256: { nivel: 35, target: 257 }, 258: { nivel: 15, target: 259 }, 259: { nivel: 35, target: 260 }, 261: { nivel: 15, target: 262 }, 263: { nivel: 15, target: 264 }, 265: { nivel: 15, target: 266 }, 266: { nivel: 35, target: 267 }, 268: { nivel: 35, target: 269 }, 270: { nivel: 15, target: 271 }, 271: { nivel: 35, target: 272 }, 273: { nivel: 15, target: 274 }, 274: { nivel: 35, target: 275 }, 276: { nivel: 15, target: 277 }, 278: { nivel: 15, target: 279 }, 280: { nivel: 15, target: 281 }, 281: { nivel: 35, target: 282 }, 283: { nivel: 15, target: 284 }, 285: { nivel: 15, target: 286 }, 287: { nivel: 15, target: 288 }, 288: { nivel: 35, target: 289 }, 290: { nivel: 15, target: 291 }, 293: { nivel: 15, target: 294 }, 294: { nivel: 35, target: 295 }, 296: { nivel: 15, target: 297 }, 298: { nivel: 15, target: 183 }, 304: { nivel: 15, target: 305 }, 305: { nivel: 35, target: 306 }, 307: { nivel: 15, target: 308 }, 309: { nivel: 15, target: 310 }, 316: { nivel: 15, target: 317 }, 318: { nivel: 15, target: 319 }, 320: { nivel: 15, target: 321 }, 322: { nivel: 15, target: 323 }, 325: { nivel: 15, target: 326 }, 328: { nivel: 15, target: 329 }, 329: { nivel: 35, target: 330 }, 331: { nivel: 15, target: 332 }, 333: { nivel: 15, target: 334 }, 339: { nivel: 15, target: 340 }, 341: { nivel: 15, target: 342 }, 343: { nivel: 15, target: 344 }, 345: { nivel: 15, target: 346 }, 347: { nivel: 15, target: 348 }, 349: { nivel: 15, target: 350 }, 353: { nivel: 15, target: 354 }, 355: { nivel: 15, target: 356 }, 360: { nivel: 15, target: 202 }, 361: { nivel: 15, target: 362 }, 363: { nivel: 15, target: 364 }, 364: { nivel: 35, target: 365 }, 371: { nivel: 15, target: 372 }, 372: { nivel: 35, target: 373 }, 374: { nivel: 15, target: 375 }, 375: { nivel: 35, target: 376 },
+    387: { nivel: 15, target: 388 }, 388: { nivel: 35, target: 389 }, 390: { nivel: 15, target: 391 }, 391: { nivel: 35, target: 392 }, 393: { nivel: 15, target: 394 }, 394: { nivel: 35, target: 395 }, 396: { nivel: 15, target: 397 }, 397: { nivel: 35, target: 398 }, 399: { nivel: 15, target: 400 }, 401: { nivel: 15, target: 402 }, 403: { nivel: 15, target: 404 }, 404: { nivel: 35, target: 405 }, 406: { nivel: 15, target: 407 }, 408: { nivel: 15, target: 409 }, 410: { nivel: 15, target: 411 }, 412: { nivel: 15, target: 413 }, 415: { nivel: 15, target: 416 }, 417: { nivel: 15, target: 418 }, 420: { nivel: 15, target: 421 }, 422: { nivel: 15, target: 423 }, 425: { nivel: 15, target: 426 }, 427: { nivel: 15, target: 428 }, 431: { nivel: 15, target: 432 }, 434: { nivel: 15, target: 435 }, 436: { nivel: 15, target: 437 }, 443: { nivel: 15, target: 444 }, 444: { nivel: 35, target: 445 }, 447: { nivel: 15, target: 448 }, 449: { nivel: 15, target: 450 }, 451: { nivel: 15, target: 452 }, 453: { nivel: 15, target: 454 }, 456: { nivel: 15, target: 457 }, 458: { nivel: 15, target: 459 },
+    495: { nivel: 15, target: 496 }, 496: { nivel: 35, target: 497 }, 498: { nivel: 15, target: 499 }, 499: { nivel: 35, target: 500 }, 501: { nivel: 15, target: 502 }, 502: { nivel: 35, target: 503 }, 504: { nivel: 15, target: 505 }, 506: { nivel: 15, target: 507 }, 507: { nivel: 35, target: 508 }, 509: { nivel: 15, target: 510 }, 519: { nivel: 15, target: 520 }, 520: { nivel: 35, target: 521 }, 522: { nivel: 15, target: 523 }, 524: { nivel: 15, target: 525 }, 525: { nivel: 35, target: 526 }, 527: { nivel: 15, target: 528 }, 529: { nivel: 15, target: 530 }, 532: { nivel: 15, target: 533 }, 533: { nivel: 35, target: 534 }, 535: { nivel: 15, target: 536 }, 536: { nivel: 35, target: 537 }, 540: { nivel: 15, target: 541 }, 541: { nivel: 35, target: 542 }, 543: { nivel: 15, target: 544 }, 544: { nivel: 35, target: 545 }, 551: { nivel: 15, target: 552 }, 552: { nivel: 35, target: 553 }, 557: { nivel: 15, target: 558 }, 559: { nivel: 15, target: 560 }, 564: { nivel: 15, target: 565 }, 566: { nivel: 15, target: 567 }, 568: { nivel: 15, target: 569 }, 570: { nivel: 15, target: 571 }, 572: { nivel: 15, target: 573 }, 574: { nivel: 15, target: 575 }, 575: { nivel: 35, target: 576 }, 577: { nivel: 15, target: 578 }, 578: { nivel: 35, target: 579 }, 580: { nivel: 15, target: 581 }, 582: { nivel: 15, target: 583 }, 583: { nivel: 35, target: 584 }, 585: { nivel: 15, target: 586 }, 587: { nivel: 15, target: 588 }, 590: { nivel: 15, target: 591 }, 592: { nivel: 15, target: 593 }, 595: { nivel: 15, target: 596 }, 597: { nivel: 15, target: 598 }, 599: { nivel: 15, target: 600 }, 600: { nivel: 35, target: 601 }, 602: { nivel: 15, target: 603 }, 603: { nivel: 35, target: 604 }, 605: { nivel: 15, target: 606 }, 607: { nivel: 15, target: 608 }, 608: { nivel: 35, target: 609 }, 610: { nivel: 15, target: 611 }, 611: { nivel: 35, target: 612 }, 613: { nivel: 15, target: 614 }, 619: { nivel: 15, target: 620 }, 622: { nivel: 15, target: 623 }, 624: { nivel: 15, target: 625 }, 627: { nivel: 15, target: 628 }, 629: { nivel: 15, target: 630 }, 633: { nivel: 15, target: 634 }, 634: { nivel: 35, target: 635 }, 636: { nivel: 15, target: 637 }
 };
 
 const TABLA_TIPOS = {
@@ -109,7 +111,6 @@ const TABLA_TIPOS = {
     normal: { rock: 0.6, steel: 0.6, ghost: 0 }
 };
 
-// RECOMPENSAS REBALANCEADAS (MUCHO MÁS BAJAS)
 const LIDERES_TORRE = [
     { piso: 1, nombre: "Entrenador Novato", idPoke: 504, recompensa: 30 },
     { piso: 2, nombre: "Líder Cilan/Chili/Cress", idPoke: 512, recompensa: 50 },
@@ -194,76 +195,152 @@ function generarIdNumerico() {
     return Math.floor(10000 + Math.random() * 90000).toString();
 }
 
-function inicializarJugadorDirecto() {
-    let cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-
-    if (!idUsuarioActual || !cuentas[idUsuarioActual]) {
+function inicializarJugadorOnline() {
+    if (!idUsuarioActual) {
         idUsuarioActual = generarIdNumerico();
-        while (cuentas[idUsuarioActual]) { idUsuarioActual = generarIdNumerico(); }
-        
-        cuentas[idUsuarioActual] = {
-            id: String(idUsuarioActual),
-            nombre: "Entrenador " + idUsuarioActual,
-            datos: null,
-            amigos: []
-        };
-        localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
-        localStorage.setItem('pokeGachaIdUsuario', String(idUsuarioActual));
+        localStorage.setItem('pokeGachaIdUsuario', idUsuarioActual);
     }
 
-    usuarioActual = cuentas[idUsuarioActual].nombre;
+    usuarioActual = "Entrenador " + idUsuarioActual;
     document.getElementById('nombre-usuario-display').innerText = usuarioActual;
     document.getElementById('id-usuario-display').innerText = `#${idUsuarioActual}`;
 
     cargarPartida();
     actualizarUI();
+    inicializarPeerJS();
 }
 
-function crearNuevoPerfilDemo() {
-    let cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    let nuevoId = generarIdNumerico();
-    while (cuentas[nuevoId]) { nuevoId = generarIdNumerico(); }
+// INICIALIZACIÓN PEERJS PARA CONEXIÓN DE AMIGOS ONLINE EN TIEMPO REAL
+function inicializarPeerJS() {
+    const peerId = `pokegacha-${idUsuarioActual}`;
+    peer = new Peer(peerId);
 
-    cuentas[nuevoId] = {
-        id: String(nuevoId),
-        nombre: "Entrenador " + nuevoId,
-        datos: { monedas: 1000, inventario: [], pokedexDescubiertos: [], logrosReclamados: [], misionesReclamadas: [], stats: { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 } },
-        amigos: []
-    };
+    peer.on('open', (id) => {
+        console.log("🌐 Conectado al servidor Online con ID:", id);
+        document.getElementById('status-online-badge').innerText = "🌐 ONLINE";
+    });
 
-    localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
-    localStorage.setItem('pokeGachaIdUsuario', String(nuevoId));
-    idUsuarioActual = String(nuevoId);
+    peer.on('connection', (conn) => {
+        conexionPeerActiva = conn;
+        configurarEventosConexion(conn);
+    });
 
-    alert(`🎉 ¡Nuevo perfil Creado! ID: #${nuevoId}. Se cambiará a este perfil inmediatamente.`);
-    inicializarJugadorDirecto();
+    peer.on('error', (err) => {
+        console.warn("PeerJS aviso:", err);
+    });
+}
+
+function conectarAmigoOnline() {
+    const input = document.getElementById('input-nuevo-amigo');
+    const idAmigo = String(input.value.trim());
+
+    if (!idAmigo || idAmigo.length !== 5) { alert("❌ Introduce un ID Online válido de 5 números."); return; }
+    if (idAmigo === String(idUsuarioActual)) { alert("❌ No puedes conectarte a ti mismo."); return; }
+
+    const targetPeerId = `pokegacha-${idAmigo}`;
+    const statusBox = document.getElementById('estado-conexion-amigo');
+    statusBox.innerText = `⏳ Conectando online con Entrenador #${idAmigo}...`;
+
+    const conn = peer.connect(targetPeerId);
+    configurarEventosConexion(conn);
+}
+
+function configurarEventosConexion(conn) {
+    conn.on('open', () => {
+        conexionPeerActiva = conn;
+        const idAmigo = conn.peer.replace('pokegacha-', '');
+        
+        document.getElementById('estado-conexion-amigo').innerText = `🟢 CONECTADO ONLINE con Entrenador #${idAmigo}`;
+        document.getElementById('msg-sin-amigo-seleccionado').classList.add('hidden');
+        document.getElementById('zona-intercambio-amigo').classList.remove('hidden');
+        document.getElementById('nombre-amigo-intercambio').innerText = `Entrenador #${idAmigo}`;
+
+        renderizarGridIntercambio();
+        alert(`🎉 ¡Conectado exitosamente con Entrenador #${idAmigo}!`);
+    });
+
+    conn.on('data', (data) => {
+        if (data.tipo === 'pokemon_recibido') {
+            const poke = data.pokemon;
+            inventario.push(poke);
+            if (!pokedexDescubiertos.includes(poke.id)) pokedexDescubiertos.push(poke.id);
+            reproducirSonido('legendario');
+            actualizarUI();
+            alert(`🎁 ¡Has recibido a ${poke.nombre} en tiempo real de tu amigo online!`);
+        }
+    });
+
+    conn.on('close', () => {
+        document.getElementById('estado-conexion-amigo').innerText = `🔴 Conexión perdida.`;
+        document.getElementById('msg-sin-amigo-seleccionado').classList.remove('hidden');
+        document.getElementById('zona-intercambio-amigo').classList.add('hidden');
+        conexionPeerActiva = null;
+    });
+}
+
+function renderizarGridIntercambio() {
+    const grid = document.getElementById('grid-inventario-intercambio');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (inventario.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">No tienes Pokémon en tu colección para enviar.</p>`;
+        return;
+    }
+
+    inventario.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
+        card.innerHTML = `
+            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
+            <img src="${poke.sprite}" alt="${poke.nombre}">
+            <strong>${poke.nombre}</strong>
+            <small>Nv. ${poke.nivel}</small>
+            <button class="btn-card btn-subir" onclick="enviarPokemonIntercambioOnline(${poke.instanciaId})">Enviar Online 🎁</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function enviarPokemonIntercambioOnline(instanciaId) {
+    if (!conexionPeerActiva) { alert("❌ No hay ningún amigo conectado online actualmente."); return; }
+
+    const index = inventario.findIndex(p => p.instanciaId === instanciaId);
+    if (index === -1) return;
+
+    const pokeEnviado = inventario[index];
+    inventario.splice(index, 1);
+
+    conexionPeerActiva.send({
+        tipo: 'pokemon_recibido',
+        pokemon: pokeEnviado
+    });
+
+    reproducirSonido('legendario');
+    actualizarUI();
+    renderizarGridIntercambio();
+
+    alert(`🎁 ¡Has enviado a ${pokeEnviado.nombre} a tu amigo en vivo!`);
 }
 
 function guardarPartida() {
     if (!idUsuarioActual) return;
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    if (cuentas[idUsuarioActual]) {
-        cuentas[idUsuarioActual].datos = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats, pisoTorreActual };
-        cuentas[idUsuarioActual].amigos = amigosLista;
-        localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
-    }
+    const datos = { monedas, inventario, pokedexDescubiertos, logrosReclamados, misionesReclamadas, stats, pisoTorreActual };
+    localStorage.setItem(`pokeGachaDatos_${idUsuarioActual}`, JSON.stringify(datos));
 }
 
 function cargarPartida() {
     if (!idUsuarioActual) return;
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    if (cuentas[idUsuarioActual]) {
-        amigosLista = (cuentas[idUsuarioActual].amigos || []).map(id => String(id));
-        if (cuentas[idUsuarioActual].datos) {
-            const data = cuentas[idUsuarioActual].datos;
-            monedas = data.monedas ?? 500;
-            inventario = data.inventario ?? [];
-            pokedexDescubiertos = data.pokedexDescubiertos ?? [];
-            logrosReclamados = data.logrosReclamados ?? [];
-            misionesReclamadas = data.misionesReclamadas ?? [];
-            pisoTorreActual = data.pisoTorreActual ?? 1;
-            stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0, casinoHoy: 0, victoriasHoy: 0, torreHoy: 0, fusionesHoy: 0 };
-        }
+    const rawData = localStorage.getItem(`pokeGachaDatos_${idUsuarioActual}`);
+    if (rawData) {
+        const data = JSON.parse(rawData);
+        monedas = data.monedas ?? 500;
+        inventario = data.inventario ?? [];
+        pokedexDescubiertos = data.pokedexDescubiertos ?? [];
+        logrosReclamados = data.logrosReclamados ?? [];
+        misionesReclamadas = data.misionesReclamadas ?? [];
+        pisoTorreActual = data.pisoTorreActual ?? 1;
+        stats = data.stats ?? { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0, casinoHoy: 0, victoriasHoy: 0, torreHoy: 0, fusionesHoy: 0 };
     }
 }
 
@@ -296,7 +373,6 @@ function cambiarPestana(pestana) {
     } else if (pestana === 'amigos') {
         document.querySelector('button[onclick="cambiarPestana(\'amigos\')"]').classList.add('active');
         document.getElementById('vista-amigos').classList.remove('hidden');
-        renderizarAmigos();
     } else if (pestana === 'pokedex') {
         document.querySelector('button[onclick="cambiarPestana(\'pokedex\')"]').classList.add('active');
         document.getElementById('vista-pokedex').classList.remove('hidden');
@@ -394,129 +470,6 @@ function reclamarLogro(logroId) {
         renderizarMisionesYLogros();
         alert(`🏆 ¡Logro alcanzado! +${logro.recompensa} Pokedólares por desbloquear: ${logro.titulo}`);
     }
-}
-
-// CORRECCIÓN TOTAL SISTEMA DE AMIGOS
-function agregarAmigo() {
-    const input = document.getElementById('input-nuevo-amigo');
-    const idAmigoIngresado = String(input.value.trim());
-
-    if (!idAmigoIngresado || idAmigoIngresado.length !== 5) { alert("❌ Introduce un ID válido de 5 números."); return; }
-    if (idAmigoIngresado === String(idUsuarioActual)) { alert("❌ No puedes agregarte a ti mismo."); return; }
-
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    
-    let idEncontrado = Object.keys(cuentas).find(id => String(id) === idAmigoIngresado);
-
-    if (!idEncontrado) { 
-        alert("❌ El ID de entrenador no existe en este navegador.\n\n💡 CONSEJO: Haz clic en el botón '+ Nuevo Perfil' en la barra superior para crear un segundo usuario de prueba con un ID de 5 números."); 
-        return; 
-    }
-
-    if (amigosLista.includes(idEncontrado)) { 
-        alert("❌ Ya tienes a este amigo en tu lista."); 
-        return; 
-    }
-
-    amigosLista.push(idEncontrado);
-    input.value = '';
-    reproducirSonido('normal');
-    actualizarUI();
-    renderizarAmigos();
-    alert(`🎉 ¡Has añadido a ${cuentas[idEncontrado].nombre} (#${idEncontrado}) a tus amigos!`);
-}
-
-function renderizarAmigos() {
-    const container = document.getElementById('lista-amigos');
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (amigosLista.length === 0) {
-        container.innerHTML = `<p style="font-size:0.75rem; color:#6b7280; text-align:center;">No tienes amigos agregados aún.</p>`;
-        return;
-    }
-
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-
-    amigosLista.forEach(idAmigo => {
-        const idStr = String(idAmigo);
-        const amigo = cuentas[idStr];
-        if (!amigo) return;
-
-        const div = document.createElement('div');
-        div.className = 'card-amigo';
-        div.innerHTML = `
-            <span>👤 ${amigo.nombre} (#${idStr})</span>
-            <button class="btn-action-top" style="font-size:0.65rem;" onclick="prepararIntercambio('${idStr}')">Intercambiar 🔄</button>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function prepararIntercambio(idAmigo) {
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    const amigo = cuentas[String(idAmigo)];
-    if (!amigo) return;
-
-    amigoSeleccionadoIntercambio = String(idAmigo);
-    document.getElementById('msg-sin-amigo-seleccionado').classList.add('hidden');
-    document.getElementById('zona-intercambio-amigo').classList.remove('hidden');
-    document.getElementById('nombre-amigo-intercambio').innerText = `${amigo.nombre} (#${idAmigo})`;
-
-    renderizarGridIntercambio();
-}
-
-function renderizarGridIntercambio() {
-    const grid = document.getElementById('grid-inventario-intercambio');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    if (inventario.length === 0) {
-        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">No tienes Pokémon en tu colección para enviar.</p>`;
-        return;
-    }
-
-    inventario.forEach(poke => {
-        const card = document.createElement('div');
-        card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
-        card.innerHTML = `
-            ${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}
-            <img src="${poke.sprite}" alt="${poke.nombre}">
-            <strong>${poke.nombre}</strong>
-            <small>Nv. ${poke.nivel}</small>
-            <button class="btn-card btn-subir" onclick="enviarPokemonIntercambio(${poke.instanciaId})">Enviar 🎁</button>
-        `;
-        grid.appendChild(card);
-    });
-}
-
-function enviarPokemonIntercambio(instanciaId) {
-    if (!amigoSeleccionadoIntercambio) return;
-
-    const index = inventario.findIndex(p => p.instanciaId === instanciaId);
-    if (index === -1) return;
-
-    const cuentas = JSON.parse(localStorage.getItem('pokeGachaCuentas') || '{}');
-    if (!cuentas[amigoSeleccionadoIntercambio]) { alert("Error al encontrar la cuenta del amigo."); return; }
-
-    const pokeEnviado = inventario[index];
-    inventario.splice(index, 1);
-
-    if (!cuentas[amigoSeleccionadoIntercambio].datos) {
-        cuentas[amigoSeleccionadoIntercambio].datos = { monedas: 500, inventario: [], pokedexDescubiertos: [], logrosReclamados: [], misionesReclamadas: [], stats: { tiradasTotales: 0, shiniesTotales: 0, gastadosTotales: 0, ganadosTotales: 0, victoriasTotales: 0, fusionesTotales: 0, tiradasHoy: 0 } };
-    }
-
-    cuentas[amigoSeleccionadoIntercambio].datos.inventario.push(pokeEnviado);
-    if (!cuentas[amigoSeleccionadoIntercambio].datos.pokedexDescubiertos.includes(pokeEnviado.id)) {
-        cuentas[amigoSeleccionadoIntercambio].datos.pokedexDescubiertos.push(pokeEnviado.id);
-    }
-
-    localStorage.setItem('pokeGachaCuentas', JSON.stringify(cuentas));
-    reproducirSonido('legendario');
-    actualizarUI();
-    renderizarGridIntercambio();
-
-    alert(`🎁 ¡Le has enviado a ${pokeEnviado.nombre} a ${cuentas[amigoSeleccionadoIntercambio].nombre}!`);
 }
 
 function inicializarAudioContext() {
@@ -731,7 +684,6 @@ function calcularMultiplicadorTipo(tipoAtaque, tipoDefensor) {
     return 1.0;
 }
 
-// ANIMACIÓN DE IMPACTO, PARPADEO DE DAÑO Y EMBESTIDA
 function animarAtaqueYDanio(attackerBoxId, defenderBoxId, danio, esCritico = false, esJugadorAtacando = true) {
     const attacker = document.getElementById(attackerBoxId);
     const defender = document.getElementById(defenderBoxId);
@@ -762,7 +714,6 @@ function mostrarResumenCombate(texto, tipoClase = '') {
     document.getElementById('texto-resumen-combate').innerHTML = texto;
 }
 
-// COMBATE ARENA
 function ejecutarAtaque() {
     if (!pokemonLuchador || !pokemonRival || hpJugadorActual <= 0 || hpRivalActual <= 0) return;
 
@@ -938,36 +889,36 @@ function reclamarDiario() {
     alert("🎉 ¡Has recibido tus 500 Pokedólares diarios!");
 }
 
-// GACHA
+// GACHA CON REGLAS DE NIVEL MÍNIMO
 function obtenerPokemonAleatorioConfig() {
     const prob = Math.random() * 100;
-    let pokemonId, rareza, valorBase;
+    let pokemonId, rareza, valorBase, nivelInicial = 1;
 
     if (maquinaActual === 'master') {
-        if (prob < 35) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; }
-        else if (prob < 75) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; }
-        else { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; }
+        if (prob < 35) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; nivelInicial = 35; }
+        else if (prob < 75) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; nivelInicial = 35; }
+        else { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; nivelInicial = 15; }
     } else if (maquinaActual === 'ultra') {
-        if (prob < 15) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; }
-        else if (prob < 60) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; }
-        else if (prob < 90) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; }
-        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; }
+        if (prob < 15) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; nivelInicial = 35; }
+        else if (prob < 60) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; nivelInicial = 35; }
+        else if (prob < 90) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; nivelInicial = 15; }
+        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; nivelInicial = 1; }
     } else if (maquinaActual === 'super') {
-        if (prob < 7) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; }
-        else if (prob < 32) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; }
-        else if (prob < 77) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; }
-        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; }
+        if (prob < 7) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; nivelInicial = 35; }
+        else if (prob < 32) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; nivelInicial = 35; }
+        else if (prob < 77) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; nivelInicial = 15; }
+        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; nivelInicial = 1; }
     } else {
-        if (prob < 3) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; }
-        else if (prob < 15) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; }
-        else if (prob < 45) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; }
-        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; }
+        if (prob < 3) { pokemonId = POOL_LEGENDARIOS[Math.floor(Math.random() * POOL_LEGENDARIOS.length)]; rareza = 'Legendario'; valorBase = 500; nivelInicial = 35; }
+        else if (prob < 15) { pokemonId = POOL_EPICOS[Math.floor(Math.random() * POOL_EPICOS.length)]; rareza = 'Epico'; valorBase = 180; nivelInicial = 35; }
+        else if (prob < 45) { pokemonId = POOL_RAROS[Math.floor(Math.random() * POOL_RAROS.length)]; rareza = 'Raro'; valorBase = 60; nivelInicial = 15; }
+        else { pokemonId = POOL_COMUNES[Math.floor(Math.random() * POOL_COMUNES.length)]; rareza = 'Comun'; valorBase = 20; nivelInicial = 1; }
     }
 
     const esShiny = Math.random() < 0.02;
     if (esShiny) valorBase = valorBase * 3;
 
-    return { pokemonId, rareza, valorBase, esShiny };
+    return { pokemonId, rareza, valorBase, esShiny, nivelInicial };
 }
 
 async function tirarGacha(cantidad) {
@@ -997,7 +948,7 @@ async function tirarGacha(cantidad) {
 
             const spriteFinal = config.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
             const nuevoPokemon = { 
-                id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: 1, tipo: datos.types[0].type.name
+                id: datos.id, nombre: config.esShiny ? `✨ ${datos.name}` : datos.name, rareza: config.rareza, sprite: spriteFinal, valorBase: config.valorBase, esShiny: config.esShiny, instanciaId: Date.now() + Math.random(), nivel: config.nivelInicial, tipo: datos.types[0].type.name
             };
 
             setTimeout(() => {
@@ -1023,7 +974,7 @@ async function tirarGacha(cantidad) {
                 const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${conf.pokemonId}`);
                 const datos = await resp.json();
                 const spriteFinal = conf.esShiny ? (datos.sprites.front_shiny || datos.sprites.front_default) : (datos.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${datos.id}.png`);
-                const poke = { id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: 1, tipo: datos.types[0].type.name };
+                const poke = { id: datos.id, nombre: conf.esShiny ? `✨ ${datos.name}` : datos.name, rareza: conf.rareza, sprite: spriteFinal, valorBase: conf.valorBase, esShiny: conf.esShiny, instanciaId: Date.now() + Math.random() + i, nivel: conf.nivelInicial, tipo: datos.types[0].type.name };
                 if (conf.esShiny) stats.shiniesTotales = (stats.shiniesTotales || 0) + 1;
                 obtenidos.push(poke);
                 inventario.push(poke);
@@ -1057,7 +1008,7 @@ function mostrarModalX10(lista) {
     lista.forEach(poke => {
         const card = document.createElement('div');
         card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
-        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>${poke.rareza}</small>`;
+        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>${poke.rareza} (Nv. ${poke.nivel})</small>`;
         grid.appendChild(card);
     });
     document.getElementById('modal-x10').classList.remove('hidden');
@@ -1157,14 +1108,14 @@ async function ejecutarFusion() {
     try {
         const respuesta = await fetch(`https://pokeapi.co/api/v2/pokemon/${idAleatorio}`);
         const datos = await respuesta.json();
-        const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 1, tipo: datos.types[0].type.name };
+        const nuevoPokemon = { id: datos.id, nombre: datos.name, rareza: 'Epico', sprite: datos.sprites.front_default, valorBase: 180, esShiny: false, instanciaId: Date.now() + Math.random(), nivel: 35, tipo: datos.types[0].type.name };
         inventario.push(nuevoPokemon);
         stats.fusionesTotales++;
         stats.fusionesHoy = (stats.fusionesHoy || 0) + 1;
         if (!pokedexDescubiertos.includes(datos.id)) pokedexDescubiertos.push(datos.id);
         reproducirSonido('legendario');
         actualizarUI();
-        alert(`¡Fusión exitosa! Obtuviste un ${nuevoPokemon.nombre} (Épico).`);
+        alert(`¡Fusión exitosa! Obtuviste un ${nuevoPokemon.nombre} (Épico Nv. 35).`);
     } catch (e) { console.error(e); }
 }
 
@@ -1207,7 +1158,7 @@ function renderizarInventarioGrid(lista) {
         
         let botonEvolucionHTML = '';
         if (puedeEvolucionar) {
-            botonEvolucionHTML = `<button class="btn-card btn-evolucionar" onclick="evolucionarPokemon(${poke.instanciaId})">Evolucionar 🧬</button>`;
+            botonEvolucionHTML = `<button class="btn-card btn-evolucionar" onclick="evolucionarPokemon(${poke.instanciaId})">Evolucionar (Nv. ${datosEvol.nivel}) 🧬</button>`;
         }
 
         card.innerHTML = `
@@ -1239,7 +1190,7 @@ function renderizarPokedexCompleta() {
     });
 }
 
-// TORRE DE BATALLA (REINICIO AUTOMÁTICO EN EL PISO 15 Y RECOMPENSAS REBAJADAS)
+// TORRE DE BATALLA
 async function iniciarPisoTorre() {
     if (!pokemonLuchadorTorre) { alert("❌ Primero selecciona un Pokémon en el menú lateral de la Torre."); return; }
     reproducirSonido('normal');
@@ -1306,7 +1257,6 @@ function ejecutarAtaqueTorre() {
         
         document.getElementById('controles-torre').classList.add('hidden');
         
-        // REINICIO AUTOMÁTICO EN EL PISO 15
         if (pisoTorreActual < LIDERES_TORRE.length) {
             pisoTorreActual++;
         } else {
@@ -1442,5 +1392,5 @@ function jugarTragaperras() {
     }, 80);
 }
 
-inicializarJugadorDirecto();
+inicializarJugadorOnline();
 setInterval(verificarEstadoRecompensaDiaria, 60000);

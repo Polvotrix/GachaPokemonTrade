@@ -13,6 +13,9 @@
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
+    <!-- SERVIDOR PEERJS PARA CONEXIÓN ONLINE EN TIEMPO REAL -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -67,13 +70,8 @@
             80% { transform: translate(5px, -3px); }
         }
 
-        .attack-lunge-right {
-            animation: lungeRight 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .attack-lunge-left {
-            animation: lungeLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .attack-lunge-right { animation: lungeRight 0.35s cubic-bezier(0.25, 1, 0.5, 1); }
+        .attack-lunge-left { animation: lungeLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1); }
 
         @keyframes lungeRight {
             0% { transform: translateX(0); }
@@ -87,9 +85,7 @@
             100% { transform: translateX(0); }
         }
 
-        .damage-blink img {
-            animation: blinkRed 0.4s ease-in-out;
-        }
+        .damage-blink img { animation: blinkRed 0.4s ease-in-out; }
 
         @keyframes blinkRed {
             0%, 100% { filter: none; }
@@ -109,21 +105,19 @@
             animation: pulse 1.5s infinite;
         }
 
+        .badge-online {
+            background: #10b981;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
-        }
-
-        .btn-crear-perfil {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 5px;
         }
     </style>
 </head>
@@ -140,7 +134,7 @@
                 <div class="user-badge">
                     👤 <span id="nombre-usuario-display">Entrenador</span> 
                     <span id="id-usuario-display" class="id-badge">#12345</span>
-                    <button class="btn-crear-perfil" onclick="crearNuevoPerfilDemo()" title="Crear un 2º perfil de prueba en este mismo navegador para probar amigos">➕ Nuevo Perfil</button>
+                    <span id="status-online-badge" class="badge-online">🌐 ONLINE</span>
                 </div>
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
@@ -149,7 +143,7 @@
                 <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
                 <button class="btn-tab" onclick="cambiarPestana('torre')">🏰 Torre</button>
                 <button class="btn-tab" onclick="cambiarPestana('minijuego')">🎰 Casino</button>
-                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
+                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos Online</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
@@ -192,7 +186,7 @@
                 <!-- INTERCAMBIO / FUSIÓN -->
                 <section class="intercambio-section">
                     <h2>Intercambio / Fusión ♻️</h2>
-                    <p class="desc-intercambio">Selecciona 3 Pokémon para fusionar y obtener uno Épico.</p>
+                    <p class="desc-intercambio">Selecciona 3 Pokémon para fusionar y obtener uno Épico (Nv. 35+).</p>
                     
                     <div id="slots-intercambio" class="slots-intercambio">
                         <div class="slot-vacio" data-slot="0">Slot 1</div>
@@ -384,33 +378,35 @@
             </section>
         </main>
 
-        <!-- 6. VISTA DE AMIGOS E INTERCAMBIOS -->
+        <!-- 6. VISTA DE AMIGOS ONLINE -->
         <main id="vista-amigos" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
-                    <h2>Añadir Amigo 👥</h2>
-                    <p class="desc-intercambio">Introduce el ID de 5 números de tu amigo.</p>
+                    <h2>Conectar Amigo Online 🌐</h2>
+                    <p class="desc-intercambio">Introduce el ID Online de 5 números de tu amigo (funciona desde cualquier ordenador/móvil).</p>
                     <div class="input-amigo-box">
                         <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5">
-                        <button class="btn-primary" onclick="agregarAmigo()">Añadir</button>
+                        <button class="btn-primary" onclick="conectarAmigoOnline()">Conectar</button>
                     </div>
 
-                    <h2 style="margin-top: 15px;">Tus Amigos</h2>
-                    <div id="lista-amigos" class="lista-amigos-container"></div>
+                    <h2 style="margin-top: 15px;">Estado de Conexión</h2>
+                    <div id="estado-conexion-amigo" class="log-batalla" style="font-size: 0.8rem; text-align: center; color: #9ca3af; padding: 15px;">
+                        🔴 Sin amigo conectado.
+                    </div>
                 </section>
             </div>
 
             <section class="pokedex-container-full">
-                <h2>Centro de Intercambio Pokémon 🔁</h2>
-                <p class="desc-pokedex">Selecciona un amigo de la izquierda para enviarle un Pokémon de tu colección.</p>
+                <h2>Centro de Intercambio Pokémon Online 🔁</h2>
+                <p class="desc-pokedex">Conéctate en directo con un amigo para intercambiar Pokémon a distancia.</p>
                 
                 <div id="zona-intercambio-amigo" class="hidden">
-                    <h3 style="margin-bottom: 10px; color: #38bdf8;">Intercambiando con: <span id="nombre-amigo-intercambio">-</span></h3>
-                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar 🎁" sobre un Pokémon para regalárselo.</p>
+                    <h3 style="margin-bottom: 10px; color: #38bdf8;">Conectado Online con: <span id="nombre-amigo-intercambio">-</span></h3>
+                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar Online 🎁" sobre un Pokémon para regalárselo en tiempo real.</p>
                     <div id="grid-inventario-intercambio" class="grid-inventario"></div>
                 </div>
                 <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">
-                    👈 Haz clic en "Intercambiar 🔄" en alguno de tus amigos de la lista para comenzar.
+                    👈 Introduce el ID de tu amigo en la izquierda para establecer conexión P2P Online.
                 </div>
             </section>
         </main>
