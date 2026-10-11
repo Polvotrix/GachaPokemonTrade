@@ -26,13 +26,13 @@ let stats = {
     tiradasHoy: 0
 };
 
-// ESTADO DE COMBATE
+// ESTADO DE COMBATE & TORRE
 let pokemonLuchador = null;
+let pokemonLuchadorTorre = null;
 let pokemonRival = null;
 let hpJugadorActual = 0, hpJugadorMax = 0;
 let hpRivalActual = 0, hpRivalMax = 0;
 
-// VARIABLES DE TORRE Y MINIJUEGO
 let pisoTorreActual = 1;
 let liderTorreActual = null;
 let hpLiderTorreActual = 0, hpLiderTorreMax = 0;
@@ -42,37 +42,41 @@ const CODIGOS_VALIDOS = {
     "071011": { recompensa: 20000, tipo: "monedas", descripcion: "20.000 Pokedólares" }
 };
 
-// POKÉDEX HASTA GEN 3 (386 POKÉMON)
-const POKEDEX_TOTAL = Array.from({ length: 386 }, (_, i) => i + 1);
+// POKÉDEX HASTA GEN 4 (493 POKÉMON)
+const POKEDEX_TOTAL = Array.from({ length: 493 }, (_, i) => i + 1);
 
-// LEGENDARIOS GEN 1, 2 Y 3
+// LEGENDARIOS GEN 1, 2, 3 Y 4
 const POOL_LEGENDARIOS = [
     144, 145, 146, 150, 151, // Gen 1
     243, 244, 245, 249, 250, 251, // Gen 2
-    377, 378, 379, 380, 381, 382, 383, 384, 385, 386 // Gen 3
+    377, 378, 379, 380, 381, 382, 383, 384, 385, 386, // Gen 3
+    480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493 // Gen 4
 ];
 
-// ÉPICOS GEN 1, 2 Y 3
+// ÉPICOS GEN 1, 2, 3 Y 4
 const POOL_EPICOS = [
     3, 6, 9, 12, 15, 18, 31, 34, 59, 62, 65, 68, 71, 76, 94, 103, 115, 130, 131, 134, 135, 136, 139, 141, 142, 143, 149,
     154, 157, 160, 169, 178, 181, 182, 186, 196, 197, 199, 208, 212, 214, 217, 227, 229, 230, 232, 242, 248,
-    254, 257, 260, 267, 269, 282, 289, 292, 295, 306, 310, 319, 321, 330, 334, 344, 346, 348, 350, 356, 359, 362, 365, 368, 373, 376
+    254, 257, 260, 267, 269, 282, 289, 292, 295, 306, 310, 319, 321, 330, 334, 344, 346, 348, 350, 356, 359, 362, 365, 368, 373, 376,
+    389, 392, 395, 398, 405, 407, 411, 413, 419, 429, 430, 435, 437, 445, 448, 450, 452, 454, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479
 ];
 
-// RAROS GEN 1, 2 Y 3
+// RAROS GEN 1, 2, 3 Y 4
 const POOL_RAROS = [
     2, 5, 8, 11, 14, 17, 22, 24, 26, 28, 30, 33, 36, 38, 40, 42, 45, 47, 49, 51, 53, 55, 58, 61, 64, 67, 70, 73, 75, 78, 80, 82, 85, 87, 89, 91, 93, 97, 99, 101, 105, 107, 109, 110, 112, 117, 119, 121, 123, 125, 126, 127, 128, 138, 140,
     153, 156, 159, 162, 164, 166, 171, 176, 180, 184, 185, 190, 192, 195, 202, 203, 205, 207, 210, 211, 213, 215, 219, 221, 224, 226, 233, 234, 237, 241,
-    253, 256, 259, 262, 264, 271, 272, 274, 275, 277, 279, 281, 284, 286, 288, 291, 294, 297, 299, 301, 303, 305, 308, 317, 323, 326, 329, 332, 335, 338, 340, 342, 354, 358, 361, 364, 367, 372, 375
+    253, 256, 259, 262, 264, 271, 272, 274, 275, 277, 279, 281, 284, 286, 288, 291, 294, 297, 299, 301, 303, 305, 308, 317, 323, 326, 329, 332, 335, 338, 340, 342, 354, 358, 361, 364, 367, 372, 375,
+    388, 391, 394, 397, 400, 402, 404, 409, 416, 418, 421, 423, 426, 428, 432, 434, 436, 439, 441, 444, 447, 449, 457, 459
 ];
 
 const POOL_COMUNES = POKEDEX_TOTAL.filter(id => !POOL_LEGENDARIOS.includes(id) && !POOL_EPICOS.includes(id) && !POOL_RAROS.includes(id));
 
-// MAPA DE EVOLUCIONES CON GEN 1, 2 Y 3
+// MAPA DE EVOLUCIONES HASTA GEN 4
 const MAPA_EVOLUCIONES = {
     1: { nivel: 5, target: 2 }, 2: { nivel: 10, target: 3 }, 4: { nivel: 5, target: 5 }, 5: { nivel: 10, target: 6 }, 7: { nivel: 5, target: 8 }, 8: { nivel: 10, target: 9 }, 10: { nivel: 3, target: 11 }, 11: { nivel: 6, target: 12 }, 13: { nivel: 3, target: 14 }, 14: { nivel: 6, target: 15 }, 16: { nivel: 4, target: 17 }, 17: { nivel: 8, target: 18 }, 19: { nivel: 5, target: 20 }, 21: { nivel: 5, target: 22 }, 23: { nivel: 5, target: 24 }, 25: { nivel: 6, target: 26 }, 27: { nivel: 5, target: 28 }, 29: { nivel: 4, target: 30 }, 30: { nivel: 8, target: 31 }, 32: { nivel: 4, target: 33 }, 33: { nivel: 8, target: 34 }, 41: { nivel: 5, target: 42 }, 43: { nivel: 5, target: 44 }, 46: { nivel: 5, target: 47 }, 48: { nivel: 5, target: 49 }, 52: { nivel: 5, target: 53 }, 54: { nivel: 5, target: 55 }, 56: { nivel: 5, target: 57 }, 60: { nivel: 4, target: 61 }, 63: { nivel: 4, target: 64 }, 66: { nivel: 4, target: 67 }, 69: { nivel: 4, target: 70 }, 72: { nivel: 5, target: 73 }, 74: { nivel: 4, target: 75 }, 77: { nivel: 6, target: 78 }, 79: { nivel: 6, target: 80 }, 81: { nivel: 5, target: 82 }, 84: { nivel: 5, target: 85 }, 86: { nivel: 5, target: 87 }, 88: { nivel: 5, target: 89 }, 90: { nivel: 5, target: 91 }, 92: { nivel: 4, target: 93 }, 96: { nivel: 5, target: 97 }, 98: { nivel: 5, target: 99 }, 100: { nivel: 5, target: 101 }, 104: { nivel: 5, target: 105 }, 109: { nivel: 5, target: 110 }, 111: { nivel: 6, target: 112 }, 116: { nivel: 5, target: 117 }, 118: { nivel: 5, target: 119 }, 120: { nivel: 5, target: 121 }, 129: { nivel: 5, target: 130 }, 133: { nivel: 6, target: 134 }, 138: { nivel: 6, target: 139 }, 140: { nivel: 6, target: 141 }, 147: { nivel: 6, target: 148 }, 148: { nivel: 12, target: 149 },
     152: { nivel: 5, target: 153 }, 153: { nivel: 10, target: 154 }, 155: { nivel: 5, target: 156 }, 156: { nivel: 10, target: 157 }, 158: { nivel: 5, target: 159 }, 159: { nivel: 10, target: 160 }, 161: { nivel: 4, target: 162 }, 163: { nivel: 4, target: 164 }, 165: { nivel: 4, target: 166 }, 167: { nivel: 4, target: 168 }, 170: { nivel: 5, target: 171 }, 172: { nivel: 3, target: 25 }, 175: { nivel: 4, target: 176 }, 177: { nivel: 5, target: 178 }, 179: { nivel: 4, target: 180 }, 180: { nivel: 8, target: 181 }, 183: { nivel: 4, target: 184 }, 187: { nivel: 4, target: 188 }, 188: { nivel: 8, target: 189 }, 194: { nivel: 4, target: 195 }, 216: { nivel: 6, target: 217 }, 218: { nivel: 5, target: 219 }, 220: { nivel: 5, target: 221 }, 223: { nivel: 5, target: 224 }, 228: { nivel: 5, target: 229 }, 231: { nivel: 5, target: 232 }, 246: { nivel: 6, target: 247 }, 247: { nivel: 12, target: 248 },
-    252: { nivel: 5, target: 253 }, 253: { nivel: 10, target: 254 }, 255: { nivel: 5, target: 256 }, 256: { nivel: 10, target: 257 }, 258: { nivel: 5, target: 259 }, 259: { nivel: 10, target: 260 }, 261: { nivel: 4, target: 262 }, 263: { nivel: 4, target: 264 }, 265: { nivel: 3, target: 266 }, 266: { nivel: 6, target: 267 }, 268: { nivel: 6, target: 269 }, 270: { nivel: 4, target: 271 }, 271: { nivel: 8, target: 272 }, 273: { nivel: 4, target: 274 }, 274: { nivel: 8, target: 275 }, 276: { nivel: 4, target: 277 }, 278: { nivel: 5, target: 279 }, 280: { nivel: 5, target: 281 }, 281: { nivel: 10, target: 282 }, 283: { nivel: 4, target: 284 }, 285: { nivel: 5, target: 286 }, 287: { nivel: 5, target: 288 }, 288: { nivel: 10, target: 289 }, 290: { nivel: 5, target: 291 }, 293: { nivel: 4, target: 294 }, 294: { nivel: 8, target: 295 }, 296: { nivel: 5, target: 297 }, 298: { nivel: 3, target: 183 }, 304: { nivel: 5, target: 305 }, 305: { nivel: 10, target: 306 }, 307: { nivel: 6, target: 308 }, 309: { nivel: 5, target: 310 }, 316: { nivel: 5, target: 317 }, 318: { nivel: 5, target: 319 }, 320: { nivel: 8, target: 321 }, 322: { nivel: 6, target: 323 }, 325: { nivel: 6, target: 326 }, 328: { nivel: 6, target: 329 }, 329: { nivel: 10, target: 330 }, 331: { nivel: 6, target: 332 }, 333: { nivel: 6, target: 334 }, 339: { nivel: 6, target: 340 }, 341: { nivel: 6, target: 342 }, 343: { nivel: 6, target: 344 }, 345: { nivel: 8, target: 346 }, 347: { nivel: 8, target: 348 }, 349: { nivel: 5, target: 350 }, 353: { nivel: 6, target: 354 }, 355: { nivel: 6, target: 356 }, 360: { nivel: 4, target: 202 }, 361: { nivel: 8, target: 362 }, 363: { nivel: 6, target: 364 }, 364: { nivel: 10, target: 365 }, 371: { nivel: 6, target: 372 }, 372: { nivel: 12, target: 373 }, 374: { nivel: 6, target: 375 }, 375: { nivel: 12, target: 376 }
+    252: { nivel: 5, target: 253 }, 253: { nivel: 10, target: 254 }, 255: { nivel: 5, target: 256 }, 256: { nivel: 10, target: 257 }, 258: { nivel: 5, target: 259 }, 259: { nivel: 10, target: 260 }, 261: { nivel: 4, target: 262 }, 263: { nivel: 4, target: 264 }, 265: { nivel: 3, target: 266 }, 266: { nivel: 6, target: 267 }, 268: { nivel: 6, target: 269 }, 270: { nivel: 4, target: 271 }, 271: { nivel: 8, target: 272 }, 273: { nivel: 4, target: 274 }, 274: { nivel: 8, target: 275 }, 276: { nivel: 4, target: 277 }, 278: { nivel: 5, target: 279 }, 280: { nivel: 5, target: 281 }, 281: { nivel: 10, target: 282 }, 283: { nivel: 4, target: 284 }, 285: { nivel: 5, target: 286 }, 287: { nivel: 5, target: 288 }, 288: { nivel: 10, target: 289 }, 290: { nivel: 5, target: 291 }, 293: { nivel: 4, target: 294 }, 294: { nivel: 8, target: 295 }, 296: { nivel: 5, target: 297 }, 298: { nivel: 3, target: 183 }, 304: { nivel: 5, target: 305 }, 305: { nivel: 10, target: 306 }, 307: { nivel: 6, target: 308 }, 309: { nivel: 5, target: 310 }, 316: { nivel: 5, target: 317 }, 318: { nivel: 5, target: 319 }, 320: { nivel: 8, target: 321 }, 322: { nivel: 6, target: 323 }, 325: { nivel: 6, target: 326 }, 328: { nivel: 6, target: 329 }, 329: { nivel: 10, target: 330 }, 331: { nivel: 6, target: 332 }, 333: { nivel: 6, target: 334 }, 339: { nivel: 6, target: 340 }, 341: { nivel: 6, target: 342 }, 343: { nivel: 6, target: 344 }, 345: { nivel: 8, target: 346 }, 347: { nivel: 8, target: 348 }, 349: { nivel: 5, target: 350 }, 353: { nivel: 6, target: 354 }, 355: { nivel: 6, target: 356 }, 360: { nivel: 4, target: 202 }, 361: { nivel: 8, target: 362 }, 363: { nivel: 6, target: 364 }, 364: { nivel: 10, target: 365 }, 371: { nivel: 6, target: 372 }, 372: { nivel: 12, target: 373 }, 374: { nivel: 6, target: 375 }, 375: { nivel: 12, target: 376 },
+    387: { nivel: 5, target: 388 }, 388: { nivel: 10, target: 389 }, 390: { nivel: 5, target: 391 }, 391: { nivel: 10, target: 392 }, 393: { nivel: 5, target: 394 }, 394: { nivel: 10, target: 395 }, 396: { nivel: 4, target: 397 }, 397: { nivel: 8, target: 398 }, 399: { nivel: 4, target: 400 }, 401: { nivel: 3, target: 402 }, 403: { nivel: 4, target: 404 }, 404: { nivel: 8, target: 405 }, 406: { nivel: 5, target: 407 }, 408: { nivel: 6, target: 409 }, 410: { nivel: 6, target: 411 }, 412: { nivel: 4, target: 413 }, 415: { nivel: 5, target: 416 }, 417: { nivel: 5, target: 418 }, 420: { nivel: 6, target: 421 }, 422: { nivel: 5, target: 423 }, 425: { nivel: 6, target: 426 }, 427: { nivel: 6, target: 428 }, 431: { nivel: 6, target: 432 }, 434: { nivel: 6, target: 435 }, 436: { nivel: 6, target: 437 }, 443: { nivel: 6, target: 444 }, 444: { nivel: 12, target: 445 }, 447: { nivel: 6, target: 448 }, 449: { nivel: 6, target: 450 }, 451: { nivel: 6, target: 452 }, 453: { nivel: 6, target: 454 }, 456: { nivel: 5, target: 457 }, 458: { nivel: 5, target: 459 }
 };
 
 const TABLA_TIPOS = {
@@ -96,16 +100,16 @@ const TABLA_TIPOS = {
 };
 
 const LIDERES_TORRE = [
-    { piso: 1, nombre: "Entrenador Novato", idPoke: 25, recompensa: 400 },
-    { piso: 2, nombre: "Líder Brock", idPoke: 74, recompensa: 700 },
-    { piso: 3, nombre: "Líder Misty", idPoke: 121, recompensa: 1000 },
-    { piso: 4, nombre: "Líder Lt. Surge", idPoke: 26, recompensa: 1500 },
-    { piso: 5, nombre: "Líder Erika", idPoke: 45, recompensa: 2200 },
-    { piso: 6, nombre: "Líder Sabrina", idPoke: 65, recompensa: 3000 },
-    { piso: 7, nombre: "Líder Blaine", idPoke: 126, recompensa: 4000 },
-    { piso: 8, nombre: "Alto Mando Lorelei", idPoke: 131, recompensa: 5500 },
-    { piso: 9, nombre: "Campeón Rival", idPoke: 149, recompensa: 7500 },
-    { piso: 10, nombre: "Dios Legendario Arceus", idPoke: 386, recompensa: 15000 }
+    { piso: 1, nombre: "Entrenador Novato", idPoke: 399, recompensa: 400 },
+    { piso: 2, nombre: "Líder Roark", idPoke: 409, recompensa: 700 },
+    { piso: 3, nombre: "Líder Gardenia", idPoke: 407, recompensa: 1000 },
+    { piso: 4, nombre: "Líder Fantina", idPoke: 429, recompensa: 1500 },
+    { piso: 5, nombre: "Líder Maylene", idPoke: 448, recompensa: 2200 },
+    { piso: 6, nombre: "Líder Volkner", idPoke: 405, recompensa: 3000 },
+    { piso: 7, nombre: "Alto Mando Cynthia", idPoke: 445, recompensa: 4500 },
+    { piso: 8, nombre: "Mítico Darkrai", idPoke: 491, recompensa: 6000 },
+    { piso: 9, nombre: "Soberano Giratina", idPoke: 487, recompensa: 8500 },
+    { piso: 10, nombre: "Dios Creador Arceus", idPoke: 493, recompensa: 20000 }
 ];
 
 let audioSilenciado = false;
@@ -176,13 +180,9 @@ function cargarPartida() {
 function cambiarPestana(pestana) {
     reproducirSonido('normal');
     
-    // Desactivar todos los botones de la barra superior
     document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
-    
-    // Ocultar todas las secciones <main>
     document.querySelectorAll('main.vista-seccion').forEach(m => m.classList.add('hidden'));
 
-    // Mostrar únicamente la pestaña seleccionada
     if (pestana === 'juego') {
         document.querySelector('button[onclick="cambiarPestana(\'juego\')"]').classList.add('active');
         document.getElementById('vista-juego').classList.remove('hidden');
@@ -193,6 +193,7 @@ function cambiarPestana(pestana) {
     } else if (pestana === 'torre') {
         document.querySelector('button[onclick="cambiarPestana(\'torre\')"]').classList.add('active');
         document.getElementById('vista-torre').classList.remove('hidden');
+        renderizarSeleccionTorre();
     } else if (pestana === 'minijuego') {
         document.querySelector('button[onclick="cambiarPestana(\'minijuego\')"]').classList.add('active');
         document.getElementById('vista-minijuego').classList.remove('hidden');
@@ -629,6 +630,46 @@ function renderizarSeleccionBatalla() {
     });
 }
 
+// SELECCIÓN ESPECÍFICA DE LA TORRE DE BATALLA
+function renderizarSeleccionTorre() {
+    const grid = document.getElementById('grid-seleccion-torre');
+    grid.innerHTML = '';
+    if (inventario.length === 0) { grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #4b5563;">Abre Pokéballs para conseguir Pokémon.</p>`; return; }
+
+    const textoBusqueda = (document.getElementById('input-buscar-luchador-torre')?.value || '').trim().toLowerCase();
+    const pokemonsFiltrados = inventario.filter(p => p.nombre.toLowerCase().includes(textoBusqueda));
+
+    if (pokemonsFiltrados.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 20px;">Sin resultados.</p>`;
+        return;
+    }
+
+    pokemonsFiltrados.forEach(poke => {
+        const card = document.createElement('div');
+        card.className = `card-pokemon ${poke.rareza} ${poke.esShiny ? 'is-shiny' : ''}`;
+        card.innerHTML = `${poke.esShiny ? '<span class="badge-shiny">SHINY</span>' : ''}<img src="${poke.sprite}" alt="${poke.nombre}"><strong>${poke.nombre}</strong><small>Nv. ${poke.nivel}</small><button class="btn-card btn-subir" onclick="seleccionarLuchadorTorre(${poke.instanciaId})">Elegir 🏰</button>`;
+        grid.appendChild(card);
+    });
+}
+
+function seleccionarLuchadorTorre(instanciaId) {
+    reproducirSonido('normal');
+    pokemonLuchadorTorre = inventario.find(p => p.instanciaId === instanciaId);
+    if (!pokemonLuchadorTorre) return;
+
+    const multiplicadorRareza = { 'Comun': 1, 'Raro': 1.5, 'Epico': 2.2, 'Legendario': 3.5 };
+    const baseMult = multiplicadorRareza[pokemonLuchadorTorre.rareza] || 1;
+
+    hpJugadorTorreMax = Math.round(100 * baseMult + (pokemonLuchadorTorre.nivel * 20));
+    hpJugadorTorreActual = hpJugadorTorreMax;
+
+    document.getElementById('display-jugador-torre').innerHTML = `<img src="${pokemonLuchadorTorre.sprite}" alt="${pokemonLuchadorTorre.nombre}">`;
+    document.getElementById('text-hp-jugador-torre').innerText = `${hpJugadorTorreActual} / ${hpJugadorTorreMax} HP`;
+    document.getElementById('hp-jugador-torre').style.width = '100%';
+
+    mostrarResumenTorre(`⚡ Has seleccionado a ${pokemonLuchadorTorre.nombre} para combatir en la Torre.`, '');
+}
+
 function cambiarMaquina(tipo, costo, elementoBtn) {
     reproducirSonido('normal');
     maquinaActual = tipo; costoActual = costo;
@@ -959,7 +1000,7 @@ function renderizarPokedexCompleta() {
 
 // TORRE DE BATALLA
 async function iniciarPisoTorre() {
-    if (!pokemonLuchador) { alert("❌ Primero debes seleccionar un Pokémon en la pestaña de Combate."); return; }
+    if (!pokemonLuchadorTorre) { alert("❌ Primero selecciona un Pokémon en el menú lateral de la Torre."); return; }
     reproducirSonido('normal');
 
     const datosPiso = LIDERES_TORRE.find(l => l.piso === pisoTorreActual) || LIDERES_TORRE[LIDERES_TORRE.length - 1];
@@ -981,8 +1022,8 @@ async function iniciarPisoTorre() {
         hpLiderTorreActual = hpLiderTorreMax;
 
         const multiplicadorRareza = { 'Comun': 1, 'Raro': 1.5, 'Epico': 2.2, 'Legendario': 3.5 };
-        const baseMult = multiplicadorRareza[pokemonLuchador.rareza] || 1;
-        hpJugadorTorreMax = Math.round(100 * baseMult + (pokemonLuchador.nivel * 20));
+        const baseMult = multiplicadorRareza[pokemonLuchadorTorre.rareza] || 1;
+        hpJugadorTorreMax = Math.round(100 * baseMult + (pokemonLuchadorTorre.nivel * 20));
         hpJugadorTorreActual = hpJugadorTorreMax;
 
         document.getElementById('nombre-lider-torre').innerText = `${liderTorreActual.nombre} (${liderTorreActual.pokemonNombre})`;
@@ -990,7 +1031,7 @@ async function iniciarPisoTorre() {
         document.getElementById('text-hp-lider-torre').innerText = `${hpLiderTorreActual} / ${hpLiderTorreMax} HP`;
         document.getElementById('hp-lider-torre').style.width = '100%';
 
-        document.getElementById('display-jugador-torre').innerHTML = `<img src="${pokemonLuchador.sprite}" alt="Tu Pokémon">`;
+        document.getElementById('display-jugador-torre').innerHTML = `<img src="${pokemonLuchadorTorre.sprite}" alt="Tu Pokémon">`;
         document.getElementById('text-hp-jugador-torre').innerText = `${hpJugadorTorreActual} / ${hpJugadorTorreMax} HP`;
         document.getElementById('hp-jugador-torre').style.width = '100%';
 
@@ -1003,9 +1044,9 @@ async function iniciarPisoTorre() {
 }
 
 function ejecutarAtaqueTorre() {
-    if (!pokemonLuchador || !liderTorreActual || hpJugadorTorreActual <= 0 || hpLiderTorreActual <= 0) return;
+    if (!pokemonLuchadorTorre || !liderTorreActual || hpJugadorTorreActual <= 0 || hpLiderTorreActual <= 0) return;
 
-    let danioBase = 20 + (pokemonLuchador.nivel * 6) + Math.random() * 10;
+    let danioBase = 20 + (pokemonLuchadorTorre.nivel * 6) + Math.random() * 10;
     hpLiderTorreActual = Math.max(0, hpLiderTorreActual - Math.round(danioBase));
     const pctLider = Math.round((hpLiderTorreActual / hpLiderTorreMax) * 100);
     document.getElementById('hp-lider-torre').style.width = `${pctLider}%`;
@@ -1052,10 +1093,10 @@ function mostrarResumenTorre(texto, clase) {
     document.getElementById('texto-resumen-torre').innerHTML = texto;
 }
 
-// MINIJUEGO RULETA
+// MINIJUEGOS: RULETA Y TRAGAPERRAS
 function girarRuleta() {
     const costoApuesta = 200;
-    if (monedas < costoApuesta) { alert("❌ No tienes suficientes Pokedólares para girar la ruleta (Costo: 200 💰)."); return; }
+    if (monedas < costoApuesta) { alert("❌ No tienes suficientes Pokedólares (Costo: 200 💰)."); return; }
 
     monedas -= costoApuesta;
     stats.gastadosTotales += costoApuesta;
@@ -1069,10 +1110,10 @@ function girarRuleta() {
         let premio = 0;
         let textoPremio = "";
 
-        if (premioRol < 5) { premio = 2000; textoPremio = "🌟 ¡JACKPOT! +2.000 Pokedólares!"; }
-        else if (premioRol < 20) { premio = 600; textoPremio = "🎉 ¡Gran Premio! +600 Pokedólares!"; }
-        else if (premioRol < 55) { premio = 250; textoPremio = "✨ ¡Premio Menor! +250 Pokedólares!"; }
-        else { premio = 0; textoPremio = "😢 ¡Mala suerte! Sin premio."; }
+        if (premioRol < 5) { premio = 2000; textoPremio = "🌟 ¡JACKPOT! +2.000 💰"; }
+        else if (premioRol < 20) { premio = 600; textoPremio = "🎉 ¡Gran Premio! +600 💰"; }
+        else if (premioRol < 55) { premio = 250; textoPremio = "✨ ¡Premio Menor! +250 💰"; }
+        else { premio = 0; textoPremio = "😢 ¡Sin premio!"; }
 
         monedas += premio;
         if (premio > 0) stats.ganadosTotales += premio;
@@ -1081,6 +1122,65 @@ function girarRuleta() {
         reproducirSonido(premio >= 600 ? 'legendario' : 'normal');
         actualizarUI();
     }, 1200);
+}
+
+function jugarTragaperras() {
+    const costo = 100;
+    if (monedas < costo) { alert("❌ No tienes suficientes Pokedólares para la Tragaperras (Costo: 100 💰)."); return; }
+
+    monedas -= costo;
+    stats.gastadosTotales += costo;
+    reproducirSonido('tirar');
+
+    const btnPalanca = document.getElementById('btn-palanca-slots');
+    btnPalanca.disabled = true;
+
+    const simbolos = ["🔴", "⚡", "💎", "7️⃣", "⭐", "🍇"];
+    const reel1 = document.getElementById('reel-1');
+    const reel2 = document.getElementById('reel-2');
+    const reel3 = document.getElementById('reel-3');
+    const txtRes = document.getElementById('texto-resultado-slots');
+
+    txtRes.innerText = "🎰 ¡Girando carretes...!";
+
+    let contador = 0;
+    const intervalo = setInterval(() => {
+        reel1.innerText = simbolos[Math.floor(Math.random() * simbolos.length)];
+        reel2.innerText = simbolos[Math.floor(Math.random() * simbolos.length)];
+        reel3.innerText = simbolos[Math.floor(Math.random() * simbolos.length)];
+        contador++;
+        if (contador > 12) {
+            clearInterval(intervalo);
+            
+            const s1 = simbolos[Math.floor(Math.random() * simbolos.length)];
+            const s2 = simbolos[Math.floor(Math.random() * simbolos.length)];
+            const s3 = simbolos[Math.floor(Math.random() * simbolos.length)];
+
+            reel1.innerText = s1;
+            reel2.innerText = s2;
+            reel3.innerText = s3;
+
+            let ganancia = 0;
+            if (s1 === s2 && s2 === s3) {
+                if (s1 === "💎" || s1 === "7️⃣") ganancia = 3000;
+                else ganancia = 1000;
+                txtRes.innerText = `🔥 ¡BOTE TRIPLE (${s1})! +${ganancia} 💰`;
+                reproducirSonido('legendario');
+            } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+                ganancia = 200;
+                txtRes.innerText = `✨ ¡Par Coincidente! +${ganancia} 💰`;
+                reproducirSonido('super');
+            } else {
+                txtRes.innerText = "❌ Inténtalo de nuevo.";
+            }
+
+            monedas += ganancia;
+            if (ganancia > 0) stats.ganadosTotales += ganancia;
+            
+            btnPalanca.disabled = false;
+            actualizarUI();
+        }
+    }, 80);
 }
 
 inicializarJugadorDirecto();

@@ -230,14 +230,22 @@ main.vista-seccion.hidden {
     background: linear-gradient(135deg, #111827, #7f1d1d33);
 }
 
-/* TORRE Y RULETA */
+/* TORRE Y CASINO */
 .torre-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .torre-info-card { background: #111827; border: 2px solid #374151; border-radius: 12px; padding: 20px; text-align: center; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
 .torre-info-card h3 { color: #fbbf24; font-size: 1.2rem; }
 .torre-info-card p { color: #9ca3af; font-size: 0.85rem; }
 
-.ruleta-box { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111827; border: 2px solid #374151; border-radius: 12px; padding: 40px; margin-top: 15px; }
-.ruleta-screen { font-size: 1.8rem; font-weight: 800; color: #38bdf8; background: #1f2937; border: 3px solid #3b82f6; border-radius: 12px; padding: 25px 40px; min-width: 320px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); }
+.casino-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%; margin-top: 10px; }
+.casino-card { background: #111827; border: 2px solid #374151; border-radius: 14px; padding: 25px; display: flex; flex-direction: column; align-items: center; }
+.casino-card h3 { font-size: 1.2rem; color: #fbbf24; margin-bottom: 5px; }
+
+.ruleta-screen { font-size: 1.5rem; font-weight: 800; color: #38bdf8; background: #1f2937; border: 3px solid #3b82f6; border-radius: 12px; padding: 20px 25px; width: 100%; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); }
+
+/* TRAGAPERRAS */
+.slot-machine-box { display: flex; gap: 12px; background: #1f2937; border: 3px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 10px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+.slot-reel { font-size: 3rem; background: #111827; width: 75px; height: 90px; border-radius: 8px; border: 2px solid #374151; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+.resumen-slots-text { font-size: 0.9rem; font-weight: 700; color: #fbbf24; min-height: 24px; }
 
 /* ANIMACIONES Y EFECTOS DE COMBATE */
 @keyframes recibirGolpe {
