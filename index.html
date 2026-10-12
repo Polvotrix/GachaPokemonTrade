@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Gacha Master - Gen 1 a 5 + GTS</title>
+    <title>Pokémon Gacha Master - PvP Directo & Casino Expandido</title>
 
     <!-- FAVICON -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M2,50 A48,48 0 0,0 98,50 Z' fill='white'/><line x1='2' y1='50' x2='98' y2='50' stroke='%23111' stroke-width='8'/><circle cx='50' cy='50' r='14' fill='white' stroke='%23111' stroke-width='8'/></svg>">
 
-    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1-5 + GTS)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate en la Torre, comercia en el GTS y completa las Generaciones!">
+    <meta property="og:title" content="🔴 Pokémon Gacha Master">
+    <meta property="og:description" content="¡PvP Directo con Amigos, Casino Expandido, GTS y Pokédex Gen 1-5!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
-    <!-- SERVIDOR PEERJS PARA CONEXIÓN ONLINE EN TIEMPO REAL -->
+    <!-- SERVIDOR PEERJS -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
@@ -22,97 +22,80 @@
     <style>
         #toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
+            top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
 
         .toast-notification {
             background: rgba(17, 24, 39, 0.95);
-            border: 2px solid #facc15;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            border: 2px solid #facc15; color: #fff;
+            padding: 12px 20px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 0.9rem;
+            display: flex; align-items: center; gap: 12px;
             animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s 3.5s forwards;
             pointer-events: auto;
         }
 
-        @keyframes slideInRight {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
-        }
-
-        .screen-shake { animation: shake 0.4s ease-in-out; }
-        @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(-8px, 5px); }
-            40% { transform: translate(8px, -5px); }
-            60% { transform: translate(-5px, 3px); }
-            80% { transform: translate(5px, -3px); }
-        }
-
-        .attack-lunge-right { animation: lungeRight 0.35s cubic-bezier(0.25, 1, 0.5, 1); }
-        .attack-lunge-left { animation: lungeLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1); }
-
-        @keyframes lungeRight {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(45px) scale(1.1); }
-            100% { transform: translateX(0); }
-        }
-
-        @keyframes lungeLeft {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(-45px) scale(1.1); }
-            100% { transform: translateX(0); }
-        }
-
-        .damage-blink img { animation: blinkRed 0.4s ease-in-out; }
-        @keyframes blinkRed {
-            0%, 100% { filter: none; }
-            25%, 75% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); }
-            50% { opacity: 0.3; }
-        }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
 
         .badge-permadeath {
-            background: #ef4444;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 8px;
+            background: #ef4444; color: white; font-size: 0.75rem; font-weight: 800;
+            padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 8px;
             animation: pulse 1.5s infinite;
         }
 
-        .badge-online {
-            background: #10b981;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 5px;
+        .badge-escudo {
+            background: #3b82f6; color: white; font-size: 0.65rem; font-weight: bold;
+            padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+        .badge-online {
+            background: #10b981; color: white; font-size: 0.65rem; font-weight: bold;
+            padding: 2px 6px; border-radius: 4px; margin-left: 5px;
         }
+
+        .grid-insignias {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; justify-content: center;
+        }
+
+        .insignia-card {
+            background: #1e293b; border: 2px solid #334155; border-radius: 10px;
+            padding: 8px 12px; text-align: center; font-size: 0.8rem; color: #64748b;
+        }
+
+        .insignia-card.obtenida {
+            border-color: #facc15; color: #facc15; background: rgba(250, 204, 21, 0.1);
+        }
+
+        .grid-tienda {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px;
+        }
+
+        .item-card {
+            background: #1e293b; border: 2px solid #334155; border-radius: 12px;
+            padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .item-card h4 { color: #facc15; margin-bottom: 5px; font-size: 1rem; }
+        .item-card p { color: #9ca3af; font-size: 0.8rem; margin-bottom: 10px; }
+        .item-precio { font-weight: bold; color: #38bdf8; margin-bottom: 10px; display: block; }
+
+        /* CASINO EXPANDIDO */
+        .grid-voltorb {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 280px; margin: 15px auto 0;
+        }
+        .celda-voltorb {
+            background: #334155; border: 2px solid #475569; border-radius: 8px;
+            height: 55px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; user-select: none;
+            transition: transform 0.15s, background-color 0.2s;
+        }
+        .celda-voltorb:hover { transform: scale(1.05); border-color: #facc15; }
+        .celda-voltorb.revelada { background: #0f172a; cursor: default; }
+        .celda-voltorb.bomba { background: #ef4444; color: white; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     </style>
 </head>
 <body>
@@ -130,19 +113,21 @@
                 <button id="btn-audio" class="btn-audio" onclick="alternarAudio()" title="Silenciar / Activar Sonido">🔊 Música: ON</button>
                 <button class="btn-codigo" onclick="abrirModalCodigo()">🎟️ Código</button>
                 <button class="btn-tab active" onclick="cambiarPestana('juego')">🎮 Juego</button>
+                <button class="btn-tab" onclick="cambiarPestana('tienda')">🏪 PokeMart</button>
                 <button class="btn-tab" onclick="cambiarPestana('misiones')">🎯 Misiones</button>
-                <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
+                <button class="btn-tab" onclick="cambiarPestana('torneo')">🏆 Liga 3v3</button>
+                <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Arena 1v1</button>
                 <button class="btn-tab" onclick="cambiarPestana('torre')">🏰 Torre</button>
                 <button class="btn-tab" onclick="cambiarPestana('minijuego')">🎰 Casino</button>
-                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
-                <button class="btn-tab" onclick="cambiarPestana('gts')">🌐 GTS Global</button>
+                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos & PvP</button>
+                <button class="btn-tab" onclick="cambiarPestana('gts')">🌐 GTS</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
-                <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
+                <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Diario</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
             </div>
         </header>
 
-        <!-- 1. VISTA JUEGO -->
+        <!-- 1. VISTA JUEGO PRINCIPAL -->
         <main id="vista-juego" class="vista-seccion">
             <div class="sidebar-container">
                 <section class="gacha-section">
@@ -216,44 +201,167 @@
             </section>
         </main>
 
-        <!-- 2. VISTA MISIONES Y LOGROS -->
+        <!-- 2. VISTA POKEMART -->
+        <main id="vista-tienda" class="vista-seccion vista-unica hidden">
+            <section class="pokedex-container-full">
+                <h2>🏪 Tienda Oficial PokeMart</h2>
+                <p class="desc-pokedex">Adquiere consumibles tácticos para potenciar y proteger a tus Pokémon.</p>
+
+                <div class="grid-tienda">
+                    <div class="item-card">
+                        <div>
+                            <h4>🍬 Caramelo Raro</h4>
+                            <p>Sube 1 Nivel instantáneamente al Pokémon que elijas.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">500 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('carameloRaro', 500)">Comprar</button>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div>
+                            <h4>🛡️ Escudo Perma-Death</h4>
+                            <p>Otorga un escudo que salva al Pokémon de la muerte permanente 1 vez.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">2.500 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('escudoPermaDeath', 2500)">Comprar</button>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div>
+                            <h4>🔥 Piedra Fuego</h4>
+                            <p>Evoluciona Pokémon especiales como Eevee, Vulpix, Growlithe.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">1.200 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('piedraFuego', 1200)">Comprar</button>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div>
+                            <h4>💧 Piedra Agua</h4>
+                            <p>Evoluciona Pokémon especiales como Eevee, Poliwhirl, Staryu.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">1.200 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('piedraAgua', 1200)">Comprar</button>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div>
+                            <h4>⚡ Piedra Trueno</h4>
+                            <p>Evoluciona Pokémon especiales como Pikachu o Eevee.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">1.200 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('piedraTrueno', 1200)">Comprar</button>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div>
+                            <h4>🧪 Poción Máxima</h4>
+                            <p>Restaura por completo los PS de tu luchador activo en combate.</p>
+                        </div>
+                        <div>
+                            <span class="item-precio">400 💰</span>
+                            <button class="btn-primary" style="width:100%;" onclick="comprarObjeto('pocionMaxima', 400)">Comprar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 25px; color: #facc15;">🎒 Tu Bolsa de Objetos:</h3>
+                <div id="bolsa-objetos-display" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;"></div>
+            </section>
+        </main>
+
+        <!-- 3. VISTA TORNEO Y LIGA POKÉMON (3v3) -->
+        <main id="vista-torneo" class="vista-seccion hidden">
+            <div class="sidebar-container">
+                <section class="gacha-section">
+                    <h2>Tu Equipo 3v3 (<span id="count-equipo-torneo">0</span>/3) 🛡️</h2>
+                    <p class="desc-intercambio">Elige 3 Pokémon para tu equipo del Torneo.</p>
+                    <input type="text" id="input-buscar-torneo" class="input-busqueda-luchador" placeholder="🔍 Buscar por nombre..." oninput="renderizarSeleccionTorneo()">
+                    <div id="grid-seleccion-torneo" class="grid-inventario" style="max-height: 380px; width: 100%;"></div>
+                </section>
+            </div>
+
+            <section class="pokedex-container-full">
+                <h2>🏆 Torneo de Líderes de Gimnasio (3v3)</h2>
+                <p class="desc-pokedex">Consigue las 8 Insignias derrotando a entrenadores legendarios con tu equipo de 3.</p>
+
+                <div class="torre-container">
+                    <div class="torre-info-card">
+                        <h3 id="titulo-rival-torneo">Rival 1: Brock (Líder Roca)</h3>
+                        <p id="desc-rival-torneo">Recompensa: +1.000 💰 e Insignia Roca 🪨</p>
+                        <button id="btn-desafiar-torneo" class="btn-primary" onclick="iniciarCombateTorneo()">⚔️ Desafiar Líder</button>
+                    </div>
+
+                    <div id="arena-torneo" class="battle-arena hidden" style="margin-top: 20px;">
+                        <div class="fighter-box" id="box-lider-torneo">
+                            <h3 id="nombre-lider-torneo">Líder</h3>
+                            <div id="display-lider-torneo" class="fighter-display"><p>-</p></div>
+                            <div class="hp-bar-bg"><div id="hp-lider-torneo" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-lider-torneo">0 / 0 HP</span>
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div class="fighter-box" id="box-jugador-torneo">
+                            <h3 id="nombre-jugador-torneo">Tu Activo</h3>
+                            <div id="display-jugador-torneo" class="fighter-display"><p>Selecciona tu equipo</p></div>
+                            <div class="hp-bar-bg"><div id="hp-jugador-torneo" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-jugador-torneo">0 / 0 HP</span>
+                        </div>
+                    </div>
+
+                    <div id="controles-torneo" class="battle-controls hidden" style="margin-top: 15px;">
+                        <button id="btn-atacar-torneo" class="btn-primary" onclick="ejecutarAtaqueTorneo()">⚡ Atacar al Rival</button>
+                    </div>
+
+                    <div id="resumen-torneo" class="resumen-combate-box" style="margin-top: 15px;">
+                        <span id="texto-resumen-torneo">🏆 Selecciona 3 Pokémon a la izquierda para armar tu equipo.</span>
+                    </div>
+
+                    <h3 style="margin-top: 25px; font-size: 1rem; color: #facc15;">🏅 Tu Medallero de Insignias:</h3>
+                    <div id="grid-insignias-display" class="grid-insignias"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 4. VISTA MISIONES -->
         <main id="vista-misiones" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full">
                 <h2>🎯 Misiones Diarias y Logros</h2>
-                <p class="desc-pokedex">Completa tareas diarias y desbloquea logros de carrera para ganar Pokedólares adicionales.</p>
-
                 <div class="casino-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
                     <div class="casino-card" style="text-align: left;">
                         <h3>📅 Misiones Diarias</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Completa estos retos hoy.</p>
                         <div id="lista-misiones-diarias" class="lista-misiones-box"></div>
                     </div>
-
                     <div class="casino-card" style="text-align: left;">
                         <h3>🏆 Logros de Carrera</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Grandes objetivos a largo plazo.</p>
                         <div id="lista-logros" class="lista-misiones-box"></div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- 3. VISTA COMBATE -->
+        <!-- 5. VISTA ARENA COMBATE 1v1 -->
         <main id="vista-batalla" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Tus Luchadores ⚔️</h2>
-                    <p class="desc-intercambio">Busca y elige un Pokémon para luchar.</p>
                     <input type="text" id="input-buscar-luchador" class="input-busqueda-luchador" placeholder="🔍 Buscar por nombre..." oninput="renderizarSeleccionBatalla()">
                     <div id="grid-seleccion-batalla" class="grid-inventario" style="max-height: 420px; width: 100%;"></div>
                 </section>
             </div>
 
             <section class="pokedex-container-full">
-                <h2>Arena de Batalla Pokémon ⚔️</h2>
-                <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere en combate lo PERDERÁS para siempre</span>
-                <p class="desc-pokedex">Aprovecha la ventaja elemental de los tipos.</p>
-                
+                <h2>Arena Salvaje 1v1 ⚔️</h2>
+                <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere lo PERDERÁS para siempre</span>
                 <div class="battle-arena">
                     <div class="fighter-box" id="box-rival">
                         <h3>Rival Salvaje</h3>
@@ -280,37 +388,33 @@
                 </div>
 
                 <div id="resumen-ganancia-combate" class="resumen-combate-box">
-                    <span id="texto-resumen-combate">💰 ¡Inicia un combate y vence al rival para conseguir Pokedólares!</span>
+                    <span id="texto-resumen-combate">💰 ¡Vence al rival para conseguir Pokedólares!</span>
                 </div>
             </section>
         </main>
 
-        <!-- 4. VISTA TORRE -->
+        <!-- 6. VISTA TORRE -->
         <main id="vista-torre" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
-                    <h2>Luchador de la Torre 🏰</h2>
-                    <p class="desc-intercambio">Selecciona qué Pokémon envías a la Torre.</p>
+                    <h2>Luchador Torre 🏰</h2>
                     <input type="text" id="input-buscar-luchador-torre" class="input-busqueda-luchador" placeholder="🔍 Buscar por nombre..." oninput="renderizarSeleccionTorre()">
                     <div id="grid-seleccion-torre" class="grid-inventario" style="max-height: 420px; width: 100%;"></div>
                 </section>
             </div>
 
             <section class="pokedex-container-full">
-                <h2>🏰 Torre de Batalla Pokémon</h2>
-                <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere en la Torre lo PERDERÁS para siempre</span>
-                <p class="desc-pokedex">Asciende por los 15 pisos.</p>
-                
+                <h2>🏰 Torre de Batalla</h2>
+                <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere lo PERDERÁS para siempre</span>
                 <div class="torre-container">
                     <div class="torre-info-card">
                         <h3>Piso Actual: <span id="piso-actual-num">1</span> / 15</h3>
-                        <p id="descripcion-piso">Reto 1: Entrenador Novato de Gimnasio</p>
                         <button id="btn-enfrentar-piso" class="btn-primary" onclick="iniciarPisoTorre()">⚔️ Desafiar Piso</button>
                     </div>
 
                     <div id="arena-torre" class="battle-arena hidden" style="margin-top: 20px;">
                         <div class="fighter-box" id="box-lider-torre">
-                            <h3 id="nombre-lider-torre">Líder de Piso</h3>
+                            <h3 id="nombre-lider-torre">Líder</h3>
                             <div id="display-lider-torre" class="fighter-display"><p>-</p></div>
                             <div class="hp-bar-bg"><div id="hp-lider-torre" class="hp-bar-fill" style="width: 100%;"></div></div>
                             <span id="text-hp-lider-torre">0 / 0 HP</span>
@@ -327,99 +431,135 @@
                         <button id="btn-atacar-torre" class="btn-primary" onclick="ejecutarAtaqueTorre()">⚡ Atacar al Líder</button>
                     </div>
                     <div id="resumen-torre" class="resumen-combate-box" style="margin-top: 15px;">
-                        <span id="texto-resumen-torre">🏰 ¡Selecciona un Pokémon a la izquierda para empezar el desafío!</span>
+                        <span id="texto-resumen-torre">🏰 ¡Selecciona un Pokémon para empezar!</span>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- 5. VISTA CASINO -->
+        <!-- 7. VISTA CASINO EXPANDIDO -->
         <main id="vista-minijuego" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full" style="text-align: center;">
-                <h2>🎰 Casino Pokémon (Ruleta & Tragaperras)</h2>
-                <p class="desc-pokedex">Prueba tu suerte en nuestros minijuegos.</p>
-                
-                <div class="casino-grid">
+                <h2>🎰 Casino Pokémon (4 Minijuegos)</h2>
+                <div class="casino-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <!-- 1. RULETA -->
                     <div class="casino-card">
                         <h3>☸️ Ruleta de la Suerte</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Gira la ruleta y recibe multiplicadores.</p>
                         <div id="ruleta-display" class="ruleta-screen">🎁 ¿Pruebas tu suerte?</div>
                         <button class="btn-primary" style="margin-top: 15px;" onclick="girarRuleta()">Girar Ruleta (200 💰)</button>
                     </div>
 
+                    <!-- 2. TRAGAPERRAS -->
                     <div class="casino-card">
                         <h3>🎰 Máquina Tragaperras</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Consigue 3 símbolos iguales.</p>
                         <div class="slot-machine-box">
                             <div id="reel-1" class="slot-reel">⚡</div>
                             <div id="reel-2" class="slot-reel">🔴</div>
                             <div id="reel-3" class="slot-reel">💎</div>
                         </div>
-                        <div id="texto-resultado-slots" class="resumen-slots-text">¡Prueba a sacar 3 7️⃣ o 💎!</div>
+                        <div id="texto-resultado-slots" class="resumen-slots-text">¡Saca 3 iguales!</div>
                         <button id="btn-palanca-slots" class="btn-primary btn-x10" style="margin-top: 15px;" onclick="jugarTragaperras()">Tirar Palanca (100 💰)</button>
+                    </div>
+
+                    <!-- 3. HIGHER OR LOWER -->
+                    <div class="casino-card">
+                        <h3>🃏 Nivel Mayor o Menor</h3>
+                        <div id="card-highlow-display" class="ruleta-screen">Nv. Actual: <strong id="val-hl-actual">--</strong></div>
+                        <p style="font-size:0.75rem; color:#9ca3af; margin-top:5px;">Racha actual: <span id="racha-hl-num" style="color:#facc15;">0</span> (Apuesta: 150 💰)</p>
+                        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                            <button class="btn-primary" onclick="jugarHighLow('MAYOR')">⬆️ MAYOR</button>
+                            <button class="btn-secondary" onclick="jugarHighLow('MENOR')">⬇️ MENOR</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. DIANA VOLTORB -->
+                    <div class="casino-card">
+                        <h3>🎯 Diana Voltorb (Voltorb Flip)</h3>
+                        <p style="font-size:0.75rem; color:#9ca3af;">Abre casillas sin hacer explotar al Voltorb. (Costo: 200 💰)</p>
+                        <div id="grid-voltorb" class="grid-voltorb"></div>
+                        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <button class="btn-primary" style="font-size:0.75rem; padding:6px 10px;" onclick="iniciarTableroVoltorb()">Nuevo Tablero</button>
+                            <button id="btn-retirar-voltorb" class="btn-secondary" style="font-size:0.75rem; padding:6px 10px;" onclick="retirarseVoltorb()" disabled>Retirar 💰</button>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- 6. VISTA AMIGOS -->
+        <!-- 8. VISTA AMIGOS & PVP DIRECTO -->
         <main id="vista-amigos" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Conectar Amigo Online 🌐</h2>
-                    <p class="desc-intercambio">Introduce el ID Online de 5 números de tu amigo.</p>
                     <div class="input-amigo-box">
                         <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5">
                         <button class="btn-primary" onclick="conectarAmigoOnline()">Conectar</button>
                     </div>
-                    <h2 style="margin-top: 15px;">Estado de Conexión</h2>
-                    <div id="estado-conexion-amigo" class="log-batalla" style="font-size: 0.8rem; text-align: center; color: #9ca3af; padding: 15px;">
-                        🔴 Sin amigo conectado.
-                    </div>
+                    <div id="estado-conexion-amigo" class="log-batalla" style="font-size: 0.8rem; text-align: center; color: #9ca3af; padding: 15px; margin-top: 15px;">🔴 Sin amigo conectado.</div>
                 </section>
             </div>
 
             <section class="pokedex-container-full">
-                <h2>Centro de Intercambio Pokémon Online 🔁</h2>
-                <p class="desc-pokedex">Conéctate en directo con un amigo para intercambiar Pokémon.</p>
+                <h2>Centro PvP Directo e Intercambios 🔁⚔️</h2>
                 <div id="zona-intercambio-amigo" class="hidden">
-                    <h3 style="margin-bottom: 10px; color: #38bdf8;">Conectado Online con: <span id="nombre-amigo-intercambio">-</span></h3>
-                    <div id="grid-inventario-intercambio" class="grid-inventario"></div>
+                    <h3 style="margin-bottom: 10px; color: #38bdf8;">Conectado con: <span id="nombre-amigo-intercambio">-</span></h3>
+                    
+                    <!-- ACCIÓN PVP DIRECTO -->
+                    <div style="background: #1e293b; border: 2px solid #facc15; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
+                        <h4 style="color: #facc15; margin-bottom: 5px;">⚔️ Combate PvP en Tiempo Real</h4>
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 12px;">Envía una solicitud para luchar con tu Pokémon activo actual contra tu amigo.</p>
+                        <button class="btn-primary" onclick="enviarDesafioPvp()">Enviarle Desafío PvP ⚔️</button>
+                    </div>
+
+                    <div id="arena-pvp-directa" class="battle-arena hidden" style="margin-bottom: 20px;">
+                        <div class="fighter-box">
+                            <h3 id="nombre-rival-pvp">Rival</h3>
+                            <div id="display-rival-pvp" class="fighter-display"><p>-</p></div>
+                            <div class="hp-bar-bg"><div id="hp-rival-pvp" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-rival-pvp">0 / 0 HP</span>
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div class="fighter-box">
+                            <h3 id="nombre-jugador-pvp">Tú</h3>
+                            <div id="display-jugador-pvp" class="fighter-display"><p>-</p></div>
+                            <div class="hp-bar-bg"><div id="hp-jugador-pvp" class="hp-bar-fill" style="width: 100%;"></div></div>
+                            <span id="text-hp-jugador-pvp">0 / 0 HP</span>
+                        </div>
+                    </div>
+
+                    <div id="controles-pvp" class="battle-controls hidden" style="margin-bottom: 20px;">
+                        <button id="btn-atacar-pvp" class="btn-primary" onclick="ejecutarAtaquePvp()">⚡ Atacar al Amigo</button>
+                    </div>
+
+                    <h3>Regalar Pokémon:</h3>
+                    <div id="grid-inventario-intercambio" class="grid-inventario" style="margin-top: 10px;"></div>
                 </div>
-                <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">
-                    👈 Introduce el ID de tu amigo en la izquierda para establecer conexión P2P Online.
-                </div>
+
+                <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">👈 Introduce el ID de tu amigo para activar el PvP e Intercambios.</div>
             </section>
         </main>
 
-        <!-- 7. VISTA GTS GLOBAL -->
+        <!-- 9. VISTA GTS -->
         <main id="vista-gts" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
-                    <h2>Depositar en el GTS 🌐</h2>
-                    <p class="desc-intercambio">Elige un Pokémon de tu colección para publicarlo en el Tablón Global en la Nube y que cualquier amigo lo adquiera.</p>
-                    <input type="text" id="input-buscar-gts" class="input-busqueda-luchador" placeholder="🔍 Buscar en tu colección..." oninput="renderizarColeccionGTS()">
+                    <h2>Depositar GTS 🌐</h2>
+                    <input type="text" id="input-buscar-gts" class="input-busqueda-luchador" placeholder="🔍 Buscar..." oninput="renderizarColeccionGTS()">
                     <div id="grid-gts-coleccion" class="grid-inventario" style="max-height: 420px; width: 100%;"></div>
                 </section>
             </div>
 
             <section class="pokedex-container-full">
-                <h2>🌐 Tablón de Intercambio Global (GTS)</h2>
-                <p class="desc-pokedex">Pokémon disponibles en la red de amigos online para reclamar o intercambiar.</p>
-                <div id="grid-gts-tablon" class="grid-inventario">
-                    <p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 40px;">No hay Pokémon publicados en el GTS en este momento.</p>
-                </div>
+                <h2>🌐 Tablón GTS Global</h2>
+                <div id="grid-gts-tablon" class="grid-inventario"><p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 40px;">No hay Pokémon en el GTS.</p></div>
             </section>
         </main>
 
-        <!-- 8. VISTA POKÉDEX -->
+        <!-- 10. VISTA POKÉDEX -->
         <main id="vista-pokedex" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full">
-                <h2>Pokédex Nacional & Maestría por Generación</h2>
-                <p class="desc-pokedex">Completa las 5 generaciones al 100% para reclamar grandes recompensas de Pokedólares.</p>
-                
+                <h2>Pokédex Nacional & Generaciones</h2>
                 <div id="contenedor-maestria-gens" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;"></div>
-
                 <div id="grid-pokedex" class="grid-pokedex"></div>
             </section>
         </main>
@@ -428,8 +568,8 @@
     <!-- MODALES -->
     <div id="modal-codigo" class="modal-overlay hidden">
         <div class="modal-content modal-codigo-content">
-            <h2>🎟️ Canjear Código Promocional</h2>
-            <input type="text" id="input-codigo" placeholder="Introduce tu código aquí..." maxlength="20" autocomplete="off">
+            <h2>🎟️ Canjear Código</h2>
+            <input type="text" id="input-codigo" placeholder="Introduce código..." maxlength="20" autocomplete="off">
             <div class="modal-actions">
                 <button class="btn-primary" onclick="canjearCodigo()">Canjear</button>
                 <button class="btn-secondary" onclick="cerrarModalCodigo()">Cerrar</button>
@@ -439,7 +579,7 @@
 
     <div id="modal-x10" class="modal-overlay hidden">
         <div class="modal-content">
-            <h2>🎉 ¡Resultado de las 10 Pokéballs!</h2>
+            <h2>🎉 ¡Resultado x10!</h2>
             <div id="grid-x10" class="grid-x10"></div>
             <button class="btn-primary" onclick="cerrarModalX10()">¡Genial!</button>
         </div>
