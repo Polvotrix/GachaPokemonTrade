@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokémon Gacha Master - Gen 1 a 5</title>
+    <title>Pokémon Gacha Master - Gen 1 a 5 + GTS</title>
 
     <!-- FAVICON -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23ef4444'/><path d='M2,50 A48,48 0 0,0 98,50 Z' fill='white'/><line x1='2' y1='50' x2='98' y2='50' stroke='%23111' stroke-width='8'/><circle cx='50' cy='50' r='14' fill='white' stroke='%23111' stroke-width='8'/></svg>">
 
-    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1-5)">
-    <meta property="og:description" content="¡Abre Pokéballs, combate en la Torre, juega a la Tragaperras y completa la Pokédex de Unova!">
+    <meta property="og:title" content="🔴 Pokémon Gacha Master (Gen 1-5 + GTS)">
+    <meta property="og:description" content="¡Abre Pokéballs, combate en la Torre, comercia en el GTS y completa las Generaciones!">
     <meta property="og:type" content="website">
     <meta property="og:theme-color" content="#ef4444">
 
@@ -20,7 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* CONTENEDOR DE NOTIFICACIONES TOAST */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -57,11 +56,7 @@
             to { opacity: 0; transform: translateY(-20px); }
         }
 
-        /* ANIMACIONES Y EFECTOS MEJORADOS EN COMBATE */
-        .screen-shake {
-            animation: shake 0.4s ease-in-out;
-        }
-
+        .screen-shake { animation: shake 0.4s ease-in-out; }
         @keyframes shake {
             0%, 100% { transform: translate(0, 0); }
             20% { transform: translate(-8px, 5px); }
@@ -86,7 +81,6 @@
         }
 
         .damage-blink img { animation: blinkRed 0.4s ease-in-out; }
-
         @keyframes blinkRed {
             0%, 100% { filter: none; }
             25%, 75% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); }
@@ -122,12 +116,9 @@
     </style>
 </head>
 <body>
-    <!-- CONTENEDOR DE NOTIFICACIONES -->
     <div id="toast-container"></div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div id="app-container" class="app-container">
-        <!-- HEADER -->
         <header>
             <div class="logo">🔴 PokeGacha UI</div>
             <div class="header-right">
@@ -143,20 +134,19 @@
                 <button class="btn-tab" onclick="cambiarPestana('batalla')">⚔️ Combate</button>
                 <button class="btn-tab" onclick="cambiarPestana('torre')">🏰 Torre</button>
                 <button class="btn-tab" onclick="cambiarPestana('minijuego')">🎰 Casino</button>
-                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos Online</button>
+                <button class="btn-tab" onclick="cambiarPestana('amigos')">👥 Amigos</button>
+                <button class="btn-tab" onclick="cambiarPestana('gts')">🌐 GTS Global</button>
                 <button class="btn-tab" onclick="cambiarPestana('pokedex')">📖 Pokédex (<span id="pokedex-count">0</span>)</button>
                 <button id="btn-diario" class="btn-diario" onclick="reclamarDiario()">🎁 Recompensa Diaria</button>
                 <div id="monedas-display">💰 <span id="cant-monedas">500</span> Pokedólares</div>
             </div>
         </header>
 
-        <!-- 1. VISTA DE JUEGO PRINCIPAL -->
+        <!-- 1. VISTA JUEGO -->
         <main id="vista-juego" class="vista-seccion">
             <div class="sidebar-container">
-                <!-- MÁQUINA GACHA -->
                 <section class="gacha-section">
                     <h2>Máquina Gacha</h2>
-                    
                     <div class="selector-maquinas">
                         <button class="btn-maquina active" onclick="cambiarMaquina('normal', 100, this)">🔴 Normal (100)</button>
                         <button class="btn-maquina" onclick="cambiarMaquina('super', 300, this)">🔵 Super (300)</button>
@@ -183,22 +173,18 @@
                     </div>
                 </section>
 
-                <!-- INTERCAMBIO / FUSIÓN -->
                 <section class="intercambio-section">
                     <h2>Intercambio / Fusión ♻️</h2>
                     <p class="desc-intercambio">Selecciona 3 Pokémon para fusionar y obtener uno Épico (Nv. 35+).</p>
-                    
                     <div id="slots-intercambio" class="slots-intercambio">
                         <div class="slot-vacio" data-slot="0">Slot 1</div>
                         <div class="slot-vacio" data-slot="1">Slot 2</div>
                         <div class="slot-vacio" data-slot="2">Slot 3</div>
                     </div>
-
                     <button id="btn-fusionar" class="btn-secondary" onclick="ejecutarFusion()" disabled>Fusionar (3 Pokémon)</button>
                 </section>
             </div>
 
-            <!-- INVENTARIO -->
             <section class="inventario-section">
                 <div class="inventario-header">
                     <h2>Tu Colección</h2>
@@ -230,7 +216,7 @@
             </section>
         </main>
 
-        <!-- 2. VISTA DE MISIONES Y LOGROS -->
+        <!-- 2. VISTA MISIONES Y LOGROS -->
         <main id="vista-misiones" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full">
                 <h2>🎯 Misiones Diarias y Logros</h2>
@@ -239,20 +225,20 @@
                 <div class="casino-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
                     <div class="casino-card" style="text-align: left;">
                         <h3>📅 Misiones Diarias</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Completa estos retos hoy para obtener recompensas.</p>
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Completa estos retos hoy.</p>
                         <div id="lista-misiones-diarias" class="lista-misiones-box"></div>
                     </div>
 
                     <div class="casino-card" style="text-align: left;">
                         <h3>🏆 Logros de Carrera</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Grandes objetivos a largo plazo para entrenadores expertos.</p>
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Grandes objetivos a largo plazo.</p>
                         <div id="lista-logros" class="lista-misiones-box"></div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- 3. VISTA DE COMBATE -->
+        <!-- 3. VISTA COMBATE -->
         <main id="vista-batalla" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
@@ -266,7 +252,7 @@
             <section class="pokedex-container-full">
                 <h2>Arena de Batalla Pokémon ⚔️</h2>
                 <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere en combate lo PERDERÁS para siempre</span>
-                <p class="desc-pokedex">Aprovecha la ventaja elemental de los tipos para asestar golpes súper efectivos.</p>
+                <p class="desc-pokedex">Aprovecha la ventaja elemental de los tipos.</p>
                 
                 <div class="battle-arena">
                     <div class="fighter-box" id="box-rival">
@@ -299,7 +285,7 @@
             </section>
         </main>
 
-        <!-- 4. VISTA DE TORRE DE BATALLA -->
+        <!-- 4. VISTA TORRE -->
         <main id="vista-torre" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
@@ -313,7 +299,7 @@
             <section class="pokedex-container-full">
                 <h2>🏰 Torre de Batalla Pokémon</h2>
                 <span class="badge-permadeath">⚠️ PERMADEATH: Si tu Pokémon muere en la Torre lo PERDERÁS para siempre</span>
-                <p class="desc-pokedex">Asciende por los 15 pisos. ¡Al completar el piso 15 el desafío se reinventa desde el Piso 1!</p>
+                <p class="desc-pokedex">Asciende por los 15 pisos.</p>
                 
                 <div class="torre-container">
                     <div class="torre-info-card">
@@ -347,30 +333,28 @@
             </section>
         </main>
 
-        <!-- 5. VISTA DE CASINO -->
+        <!-- 5. VISTA CASINO -->
         <main id="vista-minijuego" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full" style="text-align: center;">
                 <h2>🎰 Casino Pokémon (Ruleta & Tragaperras)</h2>
-                <p class="desc-pokedex">Prueba tu suerte en nuestros dos minijuegos oficiales para ganar bolsas de Pokedólares.</p>
+                <p class="desc-pokedex">Prueba tu suerte en nuestros minijuegos.</p>
                 
                 <div class="casino-grid">
                     <div class="casino-card">
                         <h3>☸️ Ruleta de la Suerte</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Gira la ruleta y recibe multiplicadores en efectivo.</p>
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Gira la ruleta y recibe multiplicadores.</p>
                         <div id="ruleta-display" class="ruleta-screen">🎁 ¿Pruebas tu suerte?</div>
                         <button class="btn-primary" style="margin-top: 15px;" onclick="girarRuleta()">Girar Ruleta (200 💰)</button>
                     </div>
 
                     <div class="casino-card">
                         <h3>🎰 Máquina Tragaperras</h3>
-                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Consigue 3 símbolos iguales para llevarte el gran bote.</p>
-                        
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Consigue 3 símbolos iguales.</p>
                         <div class="slot-machine-box">
                             <div id="reel-1" class="slot-reel">⚡</div>
                             <div id="reel-2" class="slot-reel">🔴</div>
                             <div id="reel-3" class="slot-reel">💎</div>
                         </div>
-
                         <div id="texto-resultado-slots" class="resumen-slots-text">¡Prueba a sacar 3 7️⃣ o 💎!</div>
                         <button id="btn-palanca-slots" class="btn-primary btn-x10" style="margin-top: 15px;" onclick="jugarTragaperras()">Tirar Palanca (100 💰)</button>
                     </div>
@@ -378,17 +362,16 @@
             </section>
         </main>
 
-        <!-- 6. VISTA DE AMIGOS ONLINE -->
+        <!-- 6. VISTA AMIGOS -->
         <main id="vista-amigos" class="vista-seccion hidden">
             <div class="sidebar-container">
                 <section class="gacha-section">
                     <h2>Conectar Amigo Online 🌐</h2>
-                    <p class="desc-intercambio">Introduce el ID Online de 5 números de tu amigo (funciona desde cualquier ordenador/móvil).</p>
+                    <p class="desc-intercambio">Introduce el ID Online de 5 números de tu amigo.</p>
                     <div class="input-amigo-box">
                         <input type="text" id="input-nuevo-amigo" placeholder="Ej: 84920" maxlength="5">
                         <button class="btn-primary" onclick="conectarAmigoOnline()">Conectar</button>
                     </div>
-
                     <h2 style="margin-top: 15px;">Estado de Conexión</h2>
                     <div id="estado-conexion-amigo" class="log-batalla" style="font-size: 0.8rem; text-align: center; color: #9ca3af; padding: 15px;">
                         🔴 Sin amigo conectado.
@@ -398,11 +381,9 @@
 
             <section class="pokedex-container-full">
                 <h2>Centro de Intercambio Pokémon Online 🔁</h2>
-                <p class="desc-pokedex">Conéctate en directo con un amigo para intercambiar Pokémon a distancia.</p>
-                
+                <p class="desc-pokedex">Conéctate en directo con un amigo para intercambiar Pokémon.</p>
                 <div id="zona-intercambio-amigo" class="hidden">
                     <h3 style="margin-bottom: 10px; color: #38bdf8;">Conectado Online con: <span id="nombre-amigo-intercambio">-</span></h3>
-                    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Haz clic en "Enviar Online 🎁" sobre un Pokémon para regalárselo en tiempo real.</p>
                     <div id="grid-inventario-intercambio" class="grid-inventario"></div>
                 </div>
                 <div id="msg-sin-amigo-seleccionado" class="log-batalla" style="text-align: center; padding: 40px; color: #6b7280;">
@@ -411,21 +392,43 @@
             </section>
         </main>
 
-        <!-- 7. VISTA DE POKÉDEX -->
+        <!-- 7. VISTA GTS GLOBAL -->
+        <main id="vista-gts" class="vista-seccion hidden">
+            <div class="sidebar-container">
+                <section class="gacha-section">
+                    <h2>Depositar en el GTS 🌐</h2>
+                    <p class="desc-intercambio">Elige un Pokémon de tu colección para publicarlo en el Tablón Global en la Nube y que cualquier amigo lo adquiera.</p>
+                    <input type="text" id="input-buscar-gts" class="input-busqueda-luchador" placeholder="🔍 Buscar en tu colección..." oninput="renderizarColeccionGTS()">
+                    <div id="grid-gts-coleccion" class="grid-inventario" style="max-height: 420px; width: 100%;"></div>
+                </section>
+            </div>
+
+            <section class="pokedex-container-full">
+                <h2>🌐 Tablón de Intercambio Global (GTS)</h2>
+                <p class="desc-pokedex">Pokémon disponibles en la red de amigos online para reclamar o intercambiar.</p>
+                <div id="grid-gts-tablon" class="grid-inventario">
+                    <p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 40px;">No hay Pokémon publicados en el GTS en este momento.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- 8. VISTA POKÉDEX -->
         <main id="vista-pokedex" class="vista-seccion vista-unica hidden">
             <section class="pokedex-container-full">
-                <h2>Pokédex Nacional (Gen 1, 2, 3, 4 y 5 - Unova)</h2>
-                <p class="desc-pokedex">Consigue los 649 Pokémon de las primeras cinco generaciones para completarla.</p>
+                <h2>Pokédex Nacional & Maestría por Generación</h2>
+                <p class="desc-pokedex">Completa las 5 generaciones al 100% para reclamar grandes recompensas de Pokedólares.</p>
+                
+                <div id="contenedor-maestria-gens" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;"></div>
+
                 <div id="grid-pokedex" class="grid-pokedex"></div>
             </section>
         </main>
     </div>
 
-    <!-- MODAL CÓDIGO -->
+    <!-- MODALES -->
     <div id="modal-codigo" class="modal-overlay hidden">
         <div class="modal-content modal-codigo-content">
             <h2>🎟️ Canjear Código Promocional</h2>
-            <p>Introduce tu código para recibir Pokedólares u otras recompensas especiales.</p>
             <input type="text" id="input-codigo" placeholder="Introduce tu código aquí..." maxlength="20" autocomplete="off">
             <div class="modal-actions">
                 <button class="btn-primary" onclick="canjearCodigo()">Canjear</button>
@@ -434,7 +437,6 @@
         </div>
     </div>
 
-    <!-- MODAL X10 -->
     <div id="modal-x10" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>🎉 ¡Resultado de las 10 Pokéballs!</h2>
